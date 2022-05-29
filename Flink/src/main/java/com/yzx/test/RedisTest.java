@@ -1,9 +1,9 @@
 package com.yzx.test;
 
-import com.yzx.connector.redis.MyRedisCommand;
-import com.yzx.connector.redis.MyRedisCommandDescription;
-import com.yzx.connector.redis.MyRedisRecord;
-import com.yzx.connector.redis.RedisSource;
+import com.yzx.source.redis.MyRedisCommand;
+import com.yzx.source.redis.MyRedisCommandDescription;
+import com.yzx.source.redis.MyRedisRecord;
+import com.yzx.source.redis.RedisSource;
 import com.yzx.utils.ApplicationEnv;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;

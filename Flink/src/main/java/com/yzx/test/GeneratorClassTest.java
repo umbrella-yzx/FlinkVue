@@ -10,9 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.yzx.utils.generator.Entity;
-import com.yzx.utils.generator.Property;
-import com.yzx.utils.generator.PropertyType;
+import com.yzx.template.entity.Entity;
+import com.yzx.template.entity.Property;
+import com.yzx.template.entity.PropertyType;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
@@ -29,11 +29,11 @@ public class GeneratorClassTest {
         Configuration cfg = new Configuration();
         try {
             // 步骤一：指定 模板文件从何处加载的数据源，这里设置一个文件目录
-            cfg.setDirectoryForTemplateLoading(new File("input/template"));
+            cfg.setDirectoryForTemplateLoading(new File("template"));
             cfg.setObjectWrapper(new DefaultObjectWrapper());
 
             // 步骤二：获取 模板文件
-            Template template = cfg.getTemplate("entity.ftl");
+            Template template = cfg.getTemplate("source_jdbc.ftl");
 
             // 步骤三：创建 数据模型
             Map<String, Object> root = createDataModel();
@@ -96,7 +96,7 @@ public class GeneratorClassTest {
         user.setProperties(propertyList);
 
         // 创建.java类文件
-        File outDirFile = new File("./src-template");
+        File outDirFile = new File("Flink/src/main/java");
         if(!outDirFile.exists()){
             outDirFile.mkdir();
         }
