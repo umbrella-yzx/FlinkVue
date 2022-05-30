@@ -3,19 +3,19 @@ package com.yzx.template.operate;
 import com.yzx.template.Node;
 
 /**
- * 映射节点
+ * 分组字段选择器节点
  */
-public class OperateMap extends Node {
-    //映射输入类型
+public class OperateKeySelect extends Node {
+    //过滤的泛型类型
     public String inClass;
     //映射输出类型
     public String outClass;
-    //映射条件语句
+    //选择器的条件语句
     public String condition;
 
-    public OperateMap() {
+    public OperateKeySelect() {
         javaPackage = "com.yzx.process";
-        type = "Map";
+        type = "KeySelect";
     }
 
     public String getInClass() {
@@ -26,19 +26,19 @@ public class OperateMap extends Node {
         this.inClass = inClass;
     }
 
-    public String getOutClass() {
-        return outClass;
-    }
-
-    public void setOutClass(String outClass) {
-        this.outClass = outClass;
-    }
-
     public String getCondition() {
         return condition;
     }
 
     public void setCondition(String condition) {
         this.condition = condition;
+    }
+
+    public String getOutClass() {
+        return outClass;
+    }
+
+    public void setOutClass(String outClass) {
+        this.outClass = outClass;
     }
 }

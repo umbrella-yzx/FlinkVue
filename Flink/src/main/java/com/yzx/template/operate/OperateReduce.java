@@ -3,19 +3,17 @@ package com.yzx.template.operate;
 import com.yzx.template.Node;
 
 /**
- * 映射节点
+ * 聚合节点
  */
-public class OperateMap extends Node {
-    //映射输入类型
+public class OperateReduce  extends Node {
+    //过滤的泛型类型
     public String inClass;
-    //映射输出类型
-    public String outClass;
-    //映射条件语句
+    //reduce的条件语句
     public String condition;
 
-    public OperateMap() {
+    public OperateReduce() {
         javaPackage = "com.yzx.process";
-        type = "Map";
+        type = "Reduce";
     }
 
     public String getInClass() {
@@ -24,14 +22,6 @@ public class OperateMap extends Node {
 
     public void setInClass(String inClass) {
         this.inClass = inClass;
-    }
-
-    public String getOutClass() {
-        return outClass;
-    }
-
-    public void setOutClass(String outClass) {
-        this.outClass = outClass;
     }
 
     public String getCondition() {

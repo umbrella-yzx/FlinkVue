@@ -4,6 +4,7 @@ package com.yzx.process;
 import ${package};
 </#list>
 import org.apache.flink.api.common.functions.RichMapFunction;
+import org.apache.flink.api.java.tuple.*;
 
 public class ${map.className} extends RichMapFunction<${map.inClass}, ${map.outClass}> {
     @Override

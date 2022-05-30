@@ -8,25 +8,25 @@ import java.io.Serializable;
 /**
  * 操作描述类
  */
-public class MyRedisCommandDescription implements Serializable {
+public class RedisCommandDescription implements Serializable {
     private static final long serialVersionUID = 1L;
-    private MyRedisCommand redisCommand;
+    private RedisCommand redisCommand;
     private String additionalKey;
 
-    public MyRedisCommandDescription(MyRedisCommand redisCommand, String additionalKey) {
+    public RedisCommandDescription(RedisCommand redisCommand, String additionalKey) {
         Preconditions.checkNotNull(redisCommand, "Redis command type can not be null");
         this.redisCommand = redisCommand;
         this.additionalKey = additionalKey;
-        if ((redisCommand.getRedisDataType() == RedisDataType.HASH || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET) && additionalKey == null) {
-            throw new IllegalArgumentException("Hash and Sorted Set should have additional key");
-        }
+//        if ((redisCommand.getRedisDataType() == RedisDataType.HASH || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET) && additionalKey == null) {
+//            throw new IllegalArgumentException("Hash and Sorted Set should have additional key");
+//        }
     }
 
-    public MyRedisCommandDescription(MyRedisCommand redisCommand) {
+    public RedisCommandDescription(RedisCommand redisCommand) {
         this(redisCommand, (String)null);
     }
 
-    public MyRedisCommand getCommand() {
+    public RedisCommand getCommand() {
         return this.redisCommand;
     }
 

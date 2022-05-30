@@ -5,6 +5,7 @@ import ${package};
 </#list>
 import org.apache.flink.api.common.functions.RichFilterFunction;
 import org.apache.flink.types.Row;
+import org.apache.flink.api.java.tuple.*;
 
 public class ${filter.className} extends RichFilterFunction<${filter.inClass}> {
     @Override

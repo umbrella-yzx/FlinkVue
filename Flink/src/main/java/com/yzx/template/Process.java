@@ -1,9 +1,5 @@
 package com.yzx.template;
 
-import com.yzx.template.operate.OperateFilter;
-import com.yzx.template.operate.OperateMap;
-import com.yzx.template.source.SourceJdbc;
-
 import java.util.ArrayList;
 import java.util.List;
 

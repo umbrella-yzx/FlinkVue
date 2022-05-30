@@ -9,6 +9,7 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.apache.flink.api.java.tuple.*;
 
 public class ${csv.className}<${csv.entity.className}> {
     private CSVConfig csvConfig;

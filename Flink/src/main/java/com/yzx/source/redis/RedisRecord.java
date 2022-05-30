@@ -7,11 +7,11 @@ import java.io.Serializable;
 /**
  * 定义封装redis数据类型和数据对象
  */
-public class MyRedisRecord implements Serializable {
+public class RedisRecord implements Serializable {
     private Object data;
     private RedisDataType redisDataType;
 
-    public MyRedisRecord(Object data, RedisDataType redisDataType) {
+    public RedisRecord(Object data, RedisDataType redisDataType) {
         this.data = data;
         this.redisDataType = redisDataType;
     }

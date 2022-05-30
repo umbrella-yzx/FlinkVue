@@ -9,13 +9,13 @@ import org.apache.flink.util.Preconditions;
 /**
  * redis source的实现
  */
-public class RedisSource extends RichSourceFunction<MyRedisRecord>{
+public class RedisSource extends RichSourceFunction<RedisRecord>{
 
     private static final long serialVersionUID = 1L;
     private String additionalKey;
-    private MyRedisCommand redisCommand;
+    private RedisCommand redisCommand;
     private FlinkJedisConfigBase flinkJedisConfigBase;
-    private MyRedisCommandsContainer redisCommandsContainer;
+    private RedisCommandsContainer redisCommandsContainer;
     private volatile boolean isRunning = true;
 
     /**
@@ -23,7 +23,7 @@ public class RedisSource extends RichSourceFunction<MyRedisRecord>{
      * @param flinkJedisConfigBase redis配置信息
      * @param redisCommandDescription 要读取的redis数据类型信息
      */
-    public RedisSource(FlinkJedisConfigBase flinkJedisConfigBase, MyRedisCommandDescription redisCommandDescription) {
+    public RedisSource(FlinkJedisConfigBase flinkJedisConfigBase, RedisCommandDescription redisCommandDescription) {
         Preconditions.checkNotNull(flinkJedisConfigBase, "Redis connection pool config should not be null");
         Preconditions.checkNotNull(redisCommandDescription, "MyRedisCommandDescription  can not be null");
         this.flinkJedisConfigBase = flinkJedisConfigBase;
@@ -39,7 +39,7 @@ public class RedisSource extends RichSourceFunction<MyRedisRecord>{
      */
     @Override
     public void open(Configuration parameters) throws Exception {
-        this.redisCommandsContainer = MyRedisCommandsContainerBuilder.build(this.flinkJedisConfigBase);
+        this.redisCommandsContainer = RedisCommandsContainerBuilder.build(this.flinkJedisConfigBase);
     }
 
     /**
@@ -52,11 +52,33 @@ public class RedisSource extends RichSourceFunction<MyRedisRecord>{
         while (isRunning){
             switch(this.redisCommand) {
                 case HGET:
-                    sourceContext.collect(new MyRedisRecord(this.redisCommandsContainer.hget(this.additionalKey), this.redisCommand.getRedisDataType()));
+                    sourceContext.collect(new RedisRecord(this.redisCommandsContainer.hget(this.additionalKey), this.redisCommand.getRedisDataType()));
+                    break;
+                case GET:
+                    sourceContext.collect(new RedisRecord(this.redisCommandsContainer.get(this.additionalKey), this.redisCommand.getRedisDataType()));
+                    break;
+                case LRANGE:
+                    sourceContext.collect(new RedisRecord(this.redisCommandsContainer.lrange(this.additionalKey), this.redisCommand.getRedisDataType()));
+                    break;
+                case ZRANGE:
+                    sourceContext.collect(new RedisRecord(this.redisCommandsContainer.zrange(this.additionalKey), this.redisCommand.getRedisDataType()));
+                    break;
+                case HGETALL:
+                    sourceContext.collect(new RedisRecord(this.redisCommandsContainer.hgetAll(this.additionalKey), this.redisCommand.getRedisDataType()));
+                    break;
+                case PFCOUNT:
+                    sourceContext.collect(new RedisRecord(this.redisCommandsContainer.pfcount(this.additionalKey), this.redisCommand.getRedisDataType()));
+                    break;
+                case SMEMBERS:
+                    sourceContext.collect(new RedisRecord(this.redisCommandsContainer.smembers(this.additionalKey), this.redisCommand.getRedisDataType()));
+                    break;
+                case ZRANGEWITHSCORES:
+                    sourceContext.collect(new RedisRecord(this.redisCommandsContainer.zrangeWithScores(this.additionalKey), this.redisCommand.getRedisDataType()));
                     break;
                 default:
                     throw new IllegalArgumentException("Cannot process such data type: " + this.redisCommand);
             }
+            Thread.sleep(5000);
         }
 
     }

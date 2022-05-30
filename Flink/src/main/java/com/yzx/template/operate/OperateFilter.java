@@ -2,8 +2,9 @@ package com.yzx.template.operate;
 
 import com.yzx.template.Node;
 
-import java.util.List;
-
+/**
+ * 过滤节点
+ */
 public class OperateFilter extends Node {
     //过滤的泛型类型
     public String inClass;

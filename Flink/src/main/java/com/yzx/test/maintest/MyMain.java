@@ -1,31 +1,26 @@
 package com.yzx.test.maintest;
 
-
 import com.yzx.source.config.JdbcConfig;
 import com.yzx.template.Node;
-import com.yzx.template.Process;
-import com.yzx.template.operate.OperateFilter;
-import com.yzx.template.source.SourceCSV;
-import com.yzx.template.source.SourceJdbc;
-import com.yzx.utils.Utils;
 import com.yzx.template.entity.Entity;
 import com.yzx.template.entity.Property;
 import com.yzx.template.entity.PropertyType;
-import org.apache.commons.io.FileUtils;
+import com.yzx.template.operate.OperateFilter;
+import com.yzx.template.source.SourceCSV;
+import com.yzx.template.source.SourceJdbc;
+import com.yzx.template.Process;
+import com.yzx.utils.Utils;
 
-
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Filter;
 
 public class MyMain {
 
     public static void main(String[] args) throws Exception {
+
         //当前 Java 应用程序相关的运行时对象
         Runtime run=Runtime.getRuntime();
         //程序结束时删除所有生成的文件
@@ -111,21 +106,22 @@ public class MyMain {
         return process;
     }
 
-//    private static SourceCSV generateSourceCSV(Entity entity){
-//        SourceCSV sourceCSV = new SourceCSV();
-//        sourceCSV.entity = entity;
-//        sourceCSV.sql = "CREATE TABLE mytable("+
-//                " `id` INT not null," +
-//                " `name` STRING not null," +
-//                " `chinese` INT not null," +
-//                " `english` INT not null," +
-//                " `math` INT not null" +
-//                ")WITH("+
-//                " 'connector' = 'filesystem',"+
-//                " 'path' = 'input/scores.csv',"+
-//                " 'format' = 'csv'"+
-//                ")";
-//        sourceCSV.curName = "sourceCSV";
-//        sourceCSV.preName = "NULL";
-//    }
+    private static SourceCSV generateSourceCSV(Entity entity){
+        SourceCSV sourceCSV = new SourceCSV();
+        sourceCSV.entity = entity;
+        sourceCSV.sql = "CREATE TABLE mytable("+
+                " `id` INT not null," +
+                " `name` STRING not null," +
+                " `chinese` INT not null," +
+                " `english` INT not null," +
+                " `math` INT not null" +
+                ")WITH("+
+                " 'connector' = 'filesystem',"+
+                " 'path' = 'input/scores.csv',"+
+                " 'format' = 'csv'"+
+                ")";
+        sourceCSV.curName = "sourceCSV";
+        sourceCSV.preName = "NULL";
+        return sourceCSV;
+    }
 }

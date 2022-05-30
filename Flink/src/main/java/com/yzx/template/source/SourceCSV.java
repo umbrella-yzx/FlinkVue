@@ -1,11 +1,8 @@
 package com.yzx.template.source;
 
 import com.yzx.source.config.CSVConfig;
-import com.yzx.source.config.JdbcConfig;
 import com.yzx.template.Node;
 import com.yzx.template.entity.Entity;
-
-import java.util.List;
 
 public class SourceCSV extends Node {
     //CSV配置项

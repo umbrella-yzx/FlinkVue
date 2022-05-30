@@ -8,6 +8,7 @@ import com.mysql.jdbc.PreparedStatement;
 import com.yzx.source.config.JdbcConfig;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
+import org.apache.flink.api.java.tuple.*;
 
 import java.sql.DriverManager;
 import java.sql.ResultSet;

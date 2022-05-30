@@ -1,19 +1,21 @@
-package com.yzx.template.source;
+package com.yzx.template.sink;
 
 import com.yzx.source.config.JdbcConfig;
 import com.yzx.template.Node;
 import com.yzx.template.entity.Entity;
 
-public class SourceJdbc extends Node{
+public class SinkJdbc extends Node {
     //Jdbc配置项
     public JdbcConfig jdbcConfig;
     //数据表对应POJO类
     public Entity entity;
+    //sql插入语句
+    public String sql;
 
-    public SourceJdbc() {
-        javaPackage = "com.yzx.source";
-        className = "JdbcSource";
-        type = "JdbcSource";
+    public SinkJdbc() {
+        javaPackage = "com.yzx.sink";
+        className = "JdbcSink";
+        type = "JdbcSink";
     }
 
     public JdbcConfig getJdbcConfig() {
@@ -30,5 +32,13 @@ public class SourceJdbc extends Node{
 
     public void setEntity(Entity entity) {
         this.entity = entity;
+    }
+
+    public String getSql() {
+        return sql;
+    }
+
+    public void setSql(String sql) {
+        this.sql = sql;
     }
 }
