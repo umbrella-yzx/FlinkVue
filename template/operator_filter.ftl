@@ -7,9 +7,9 @@ import org.apache.flink.api.common.functions.RichFilterFunction;
 import org.apache.flink.types.Row;
 import org.apache.flink.api.java.tuple.*;
 
-public class ${filter.className} extends RichFilterFunction<${filter.inClass}> {
+public class ${filter.className} extends RichFilterFunction<${filter.outClass}> {
     @Override
-    public boolean filter(${filter.inClass} value) throws Exception {
+    public boolean filter(${filter.outClass} value) throws Exception {
         return ${filter.condition};
     }
 }

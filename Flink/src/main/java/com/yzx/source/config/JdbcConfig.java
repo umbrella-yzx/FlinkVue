@@ -44,6 +44,9 @@ public class JdbcConfig implements Serializable {
         this.password = password;
     }
 
+    public JdbcConfig() {
+    }
+
     public String getDriverName() {
         return driverName;
     }

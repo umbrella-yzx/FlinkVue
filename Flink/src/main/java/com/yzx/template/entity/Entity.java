@@ -53,4 +53,15 @@ public class Entity {
     public void setConstructors(boolean constructors) {
         this.constructors = constructors;
     }
+
+    @Override
+    public String toString() {
+        return "Entity{" +
+                "javaPackage='" + javaPackage + '\'' +
+                ", className='" + className + '\'' +
+                ", superclass='" + superclass + '\'' +
+                ", properties=" + properties.toString() +
+                ", constructors=" + constructors +
+                '}';
+    }
 }

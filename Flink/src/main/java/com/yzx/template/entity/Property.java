@@ -31,4 +31,13 @@ public class Property {
     public void setPropertyType(PropertyType propertyType) {
         this.propertyType = propertyType;
     }
+
+    @Override
+    public String toString() {
+        return "Property{" +
+                "javaType='" + javaType + '\'' +
+                ", propertyName='" + propertyName + '\'' +
+                ", propertyType=" + propertyType +
+                '}';
+    }
 }

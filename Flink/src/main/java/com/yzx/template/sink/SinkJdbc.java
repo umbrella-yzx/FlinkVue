@@ -9,8 +9,6 @@ public class SinkJdbc extends Node {
     public JdbcConfig jdbcConfig;
     //数据表对应POJO类
     public Entity entity;
-    //sql插入语句
-    public String sql;
 
     public SinkJdbc() {
         javaPackage = "com.yzx.sink";
@@ -32,13 +30,5 @@ public class SinkJdbc extends Node {
 
     public void setEntity(Entity entity) {
         this.entity = entity;
-    }
-
-    public String getSql() {
-        return sql;
-    }
-
-    public void setSql(String sql) {
-        this.sql = sql;
     }
 }

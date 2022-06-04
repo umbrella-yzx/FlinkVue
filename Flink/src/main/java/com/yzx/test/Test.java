@@ -15,36 +15,6 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 
 public class Test {
     public static void main(String[] args) throws Exception {
-        StreamExecutionEnvironment env = ApplicationEnv.getEnvironment();
-        StreamTableEnvironment tableEnv = ApplicationEnv.getTableEnvironment();
-        String sql = "CREATE TABLE mytable("+
-                " `id` INT not null," +
-                " `name` STRING not null," +
-                " `chinese` INT not null," +
-                " `english` INT not null," +
-                " `math` INT not null" +
-                ")WITH("+
-                " 'connector' = 'filesystem',"+
-                " 'path' = 'input/scores.csv',"+
-                " 'format' = 'csv'"+
-                ")";
-        TableResult tableResult = tableEnv.executeSql(sql);
-        tableEnv.executeSql("DROP TABLE IF EXISTS `mytable`");
-        sql = "CREATE TABLE mytable("+
-                " `id` INT not null," +
-                " `name` STRING not null," +
-                " `chinese` INT not null," +
-                " `english` INT not null," +
-                " `math` INT not null" +
-                ")WITH("+
-                " 'connector' = 'filesystem',"+
-                " 'path' = 'input/scores.csv',"+
-                " 'format' = 'csv'"+
-                ")";
-        tableEnv.executeSql(sql);
-        Table table = tableEnv.sqlQuery("select * from mytable");
-        DataStream<MyScores> sinkStream = tableEnv.toAppendStream(table, MyScores.class);
-        sinkStream.print();
-        env.execute();
+
     }
 }

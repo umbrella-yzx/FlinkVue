@@ -38,4 +38,20 @@ public class SourceRedis extends Node {
     public void setRedisConfig(RedisConfig redisConfig) {
         this.redisConfig = redisConfig;
     }
+
+    public String getInClass() {
+        return inClass;
+    }
+
+    public void setInClass(String inClass) {
+        this.inClass = inClass;
+    }
+
+    public String getOutClass() {
+        return outClass;
+    }
+
+    public void setOutClass(String outClass) {
+        this.outClass = outClass;
+    }
 }

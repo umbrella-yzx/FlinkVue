@@ -6,8 +6,8 @@ import com.yzx.template.Node;
  * 聚合节点
  */
 public class OperateReduce  extends Node {
-    //过滤的泛型类型
-    public String inClass;
+    //reduce的泛型类型
+    public String outClass;
     //reduce的条件语句
     public String condition;
 
@@ -16,12 +16,12 @@ public class OperateReduce  extends Node {
         type = "Reduce";
     }
 
-    public String getInClass() {
-        return inClass;
+    public String getOutClass() {
+        return outClass;
     }
 
-    public void setInClass(String inClass) {
-        this.inClass = inClass;
+    public void setOutClass(String outClass) {
+        this.outClass = outClass;
     }
 
     public String getCondition() {

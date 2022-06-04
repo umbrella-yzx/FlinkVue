@@ -9,6 +9,8 @@ public class OperateAggregation extends Node {
     //聚合的条件语句
     public String condition;
 
+    public String outClass;
+
     /**
      * 0:sum():滚动聚合流过该算子的指定字段的和
      * 1:min():滚动计算流过该算子的指定字段的最小值
@@ -20,6 +22,14 @@ public class OperateAggregation extends Node {
 
     public OperateAggregation() {
         type = "Aggregation";
+    }
+
+    public String getOutClass() {
+        return outClass;
+    }
+
+    public void setOutClass(String outClass) {
+        this.outClass = outClass;
     }
 
     public String getCondition() {

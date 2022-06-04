@@ -8,7 +8,7 @@ import org.apache.flink.api.java.tuple.*;
 
 public class ${map.className} extends RichMapFunction<${map.inClass}, ${map.outClass}> {
     @Override
-    public ${map.inClass} map(${map.outClass} value) throws Exception {
+    public ${map.outClass} map(${map.inClass} value) throws Exception {
         ${map.outClass} out = ${map.condition};
         return out;
     }

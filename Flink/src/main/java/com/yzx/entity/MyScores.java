@@ -24,4 +24,8 @@ public class MyScores {
                 "id=" + id +","+ ", name='" + name + '\'' + ", Chinese=" + chinese +", English=" + english +", Math=" + math +
                 '}';
     }
+
+    public String toCSVString(){
+        return id +","+ name +","+ chinese+","+ english +"," +math;
+    }
 }

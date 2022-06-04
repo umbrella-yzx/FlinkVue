@@ -33,4 +33,8 @@ public class ${entity.className}<#if entity.superclass?has_content> extends ${en
             '}';
     }
 
+    public String toCSVString(){
+        return <#list entity.properties as property>${property.propertyName}<#if property_has_next>+","+</#if></#list>;
+    }
+
 }

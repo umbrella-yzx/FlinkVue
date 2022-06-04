@@ -7,7 +7,7 @@ import com.yzx.template.Node;
  */
 public class OperateFilter extends Node {
     //过滤的泛型类型
-    public String inClass;
+    public String outClass;
     //过滤的条件语句
     public String condition;
 
@@ -16,12 +16,12 @@ public class OperateFilter extends Node {
         type = "Filter";
     }
 
-    public String getInClass() {
-        return inClass;
+    public String getOutClass() {
+        return outClass;
     }
 
-    public void setInClass(String inClass) {
-        this.inClass = inClass;
+    public void setOutClass(String outClass) {
+        this.outClass = outClass;
     }
 
     public String getCondition() {
