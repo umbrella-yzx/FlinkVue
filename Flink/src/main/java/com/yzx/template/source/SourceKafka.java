@@ -1,7 +1,7 @@
 package com.yzx.template.source;
 
 import com.yzx.source.config.KafkaConfig;
-import com.yzx.template.Node;
+import com.yzx.test.Node;
 
 public class SourceKafka extends Node {
     public KafkaConfig kafkaConfig;

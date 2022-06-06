@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Process {
     // 实体所在的包名
-    public String javaPackage = "com.yzx.test.maintest";
+    public String javaPackage = "com.yzx.process";
     // 实体类名
     public String className = "Process";
 

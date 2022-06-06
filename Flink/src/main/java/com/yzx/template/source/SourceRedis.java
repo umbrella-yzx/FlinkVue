@@ -1,7 +1,7 @@
 package com.yzx.template.source;
 
 import com.yzx.source.config.RedisConfig;
-import com.yzx.template.Node;
+import com.yzx.test.Node;
 
 public class SourceRedis extends Node {
     //redis配置项

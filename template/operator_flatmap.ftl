@@ -1,4 +1,4 @@
-package com.yzx.process;
+package ${flatmap.javaPackage};
 
 <#list flatmap.inPackages as package>
     import ${package};

@@ -1,4 +1,4 @@
-package com.yzx.process;
+package ${filter.javaPackage};
 
 <#list filter.inPackages as package>
 import ${package};

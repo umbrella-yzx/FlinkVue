@@ -1,4 +1,4 @@
-package com.yzx.sink;
+package ${jdbcsink.javaPackage};
 
 <#list jdbcsink.inPackages as package>
     import ${package};

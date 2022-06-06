@@ -1,10 +1,13 @@
 package com.yzx.domain;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 @Data
 public class JdbcConfig {
-    private int id;
+    @TableId(value = "id", type = IdType.AUTO)
+    private Integer id;
     private String driverName ="com.mysql.jdbc.Driver";
     private String DBUrl = "jdbc:mysql://localhost:3306/test";
     private String userName = "root";

@@ -1,26 +1,14 @@
 package com.yzx.test;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.yzx.source.config.*;
-import com.yzx.template.Node;
 import com.yzx.template.Process;
-import com.yzx.template.entity.Entity;
-import com.yzx.template.entity.Property;
-import com.yzx.template.operate.*;
 import com.yzx.template.sink.SinkCSV;
 import com.yzx.template.sink.SinkConsle;
 import com.yzx.template.sink.SinkJdbc;
-import com.yzx.template.source.*;
 import com.yzx.utils.Utils;
-import org.apache.commons.collections.map.HashedMap;
-import org.apache.flink.api.java.tuple.Tuple2;
 
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
 
 public class NodeTest {
     public static void main(String[] args) throws Exception {

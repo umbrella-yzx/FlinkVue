@@ -1,4 +1,4 @@
-package com.yzx.process;
+package ${keyby.javaPackage};
 
 <#list keyby.inPackages as package>
     import ${package};

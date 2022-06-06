@@ -1,4 +1,4 @@
-package com.yzx.test.maintest;
+package ${process.javaPackage};
 
 <#list process.nodes as node>
 <#if (node.javaPackage)??>import ${node.javaPackage}.${node.className};</#if>

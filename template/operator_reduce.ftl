@@ -1,4 +1,4 @@
-package com.yzx.process;
+package ${reduce.javaPackage};
 
 <#list reduce.inPackages as package>
     import ${package};

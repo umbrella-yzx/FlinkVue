@@ -1,4 +1,4 @@
-package com.yzx.process;
+package ${map.javaPackage};
 
 <#list map.inPackages as package>
 import ${package};

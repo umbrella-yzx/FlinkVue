@@ -13,4 +13,5 @@ mybatis-plus:
     db-config:
       id-type: auto
       table-underline: false
-
+server:
+  port: 9355

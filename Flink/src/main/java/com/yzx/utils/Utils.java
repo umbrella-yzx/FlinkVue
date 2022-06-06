@@ -3,7 +3,7 @@ package com.yzx.utils;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzx.source.config.*;
-import com.yzx.template.Node;
+import com.yzx.test.Node;
 import com.yzx.template.Process;
 import com.yzx.template.entity.Entity;
 import com.yzx.template.entity.Property;
@@ -22,6 +22,9 @@ import org.apache.commons.collections.map.HashedMap;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import java.io.*;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.*;
 
 public class Utils {
@@ -82,6 +85,34 @@ public class Utils {
     private static File javaFile = null;
 
     public static ArrayList<String> generateFile = new ArrayList<>();
+
+    public static void execute(String entityJson,String json){
+        //当前 Java 应用程序相关的运行时对象
+        Runtime run=Runtime.getRuntime();
+        //程序结束时删除所有生成的文件
+        run.addShutdownHook(new Thread(Utils::deleteFile));
+
+        Utils.generateEntity(entityJson);
+
+        Utils.generateProcess(json);
+
+        try{
+            //通过反射方法动态执行
+            //1、首先构建文件的目录url地址，
+            URL[] urls =new URL[] {new URL("file:E:/Java/Workspace/FlinkVue/Flink/src/main/java/com/yzx/process/")};
+            //2、使用URLClassLoader对象的loadClass方法加载对应类
+            URLClassLoader loder=new URLClassLoader(urls);
+            //3、获取所加载类的方法
+            Class<?> clazz =loder.loadClass("com.yzx.process.Process");
+            // 4、传入方法所需的参数通过invoke运行方法
+            Method method=clazz.getDeclaredMethod("execute");
+            method.invoke(null); //当类型为String[]时，需要(Object)new String[] {}初始化
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
 
     /**
      * 解析数据源配置项
@@ -371,6 +402,9 @@ public class Utils {
         JSONArray nodeList = jsonObject.getJSONArray("nodeList");
         JSONArray lineList = jsonObject.getJSONArray("lineList");
 
+        //对于union节点，保存节点名字和对应的前置变量名集合
+        Map<String,List<String>> unionName2PreNames = new HashedMap();
+
         List<String> idx2name = new ArrayList<>();
         for(int i=0;i< nodeList.size();++i){
             JSONObject object = nodeList.getJSONObject(i);
@@ -384,7 +418,11 @@ public class Utils {
                 case "Map":Utils.name2nodeMap.put(object.getString("id"),generateOperateMap(object));break;
                 case "FlatMap":Utils.name2nodeMap.put(object.getString("id"),generateOperateFlatMap(object));break;
                 case "KeyBy":Utils.name2nodeMap.put(object.getString("id"),generateOperateKeySelect(object));break;
-                case "Union":Utils.name2nodeMap.put(object.getString("id"),generateOperateUnion(object));break;
+                case "Union":{
+                    String id = object.getString("id");
+                    Utils.name2nodeMap.put(id,generateOperateUnion(object));
+                    unionName2PreNames.put(id,new ArrayList<>());
+                }break;
                 default:break;
             }
         }
@@ -392,8 +430,19 @@ public class Utils {
         for (int i = 0; i < lineList.size(); i++) {
             JSONObject object = lineList.getJSONObject(i);
             g.addEdge(idx2name.indexOf(object.getString("from")),idx2name.indexOf(object.getString("to")));
-            Utils.name2nodeMap.get(object.getString("to")).setPreName(object.getString("from"));
+
+            //设置前置变量名，Union需要特殊操作
+            if(unionName2PreNames.containsKey(object.getString("to"))){ //如果是union节点
+                unionName2PreNames.get(object.getString("to")).add(object.getString("from"));
+            }else{
+                Utils.name2nodeMap.get(object.getString("to")).setPreName(object.getString("from"));
+            }
         }
+        //设置union节点的前置变量名和条件
+        for(String key:unionName2PreNames.keySet()){
+            ((OperateUnion) Utils.name2nodeMap.get(key)).setConditionAndPreName(unionName2PreNames.get(key));
+        }
+
         List<Integer> list = g.topologicalSort();
         List<Node> nodes = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
