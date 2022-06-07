@@ -1,6 +1,6 @@
 package com.yzx.template.operate;
 
-import com.yzx.test.Node;
+import com.yzx.template.Node;
 
 /**
  * 扁平映射节点

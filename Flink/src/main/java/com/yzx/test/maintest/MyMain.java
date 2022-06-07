@@ -1,13 +1,7 @@
 package com.yzx.test.maintest;
 
-import com.yzx.source.config.JdbcConfig;
 import com.yzx.utils.ApplicationEnv;
-import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.streaming.api.datastream.DataStreamSource;
-import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-
-import java.util.Properties;
 
 public class MyMain {
 

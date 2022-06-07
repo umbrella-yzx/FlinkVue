@@ -65,17 +65,17 @@ public class Process {
             </#if>
 
             <#if node.type == "CSVSource">
-                DataStream<${node.entity.className}> ${node.curName} = new ${node.className}<${node.entity.className}>().getCsvDataStream();
+                DataStream<${node.entity.className}> ${node.curName} = new ${node.className}().getCsvDataStream();
             </#if>
 
             <#if node.type == "HDFSSource">
-                DataStreamSource<${node.outClass}> ${node.curName} = env.readTextFile("hdfs://"+"${node.hdfsConfig.host}"+":"+"${node.hdfsConfig.host}"+"${node.hdfsConfig.filePath}");
+                DataStreamSource<${node.outClass}> ${node.curName} = env.readTextFile("hdfs://"+"${node.hdfsConfig.host}"+":"+"${node.hdfsConfig.port?c}"+"${node.hdfsConfig.filePath}");
             </#if>
 
             <#if node.type == "RedisSource">
                 SingleOutputStreamOperator<${node.outClass}> ${node.curName} = env.addSource(
                     new RedisSource(
-                        new FlinkJedisPoolConfig.Builder().setHost("${node.redisConfig.host}").setPassword(${node.redisConfig.password}).setPort(${node.redisConfig.port}).build(),
+                        new FlinkJedisPoolConfig.Builder().setHost("${node.redisConfig.host}").setPassword(${node.redisConfig.password}).setPort(${node.redisConfig.port?c}).build(),
                         new RedisCommandDescription(RedisCommand.${node.redisConfig.command},"${node.redisConfig.key}")))
                     .map(new MapFunction<${node.inClass}, ${node.outClass}>() {
                         @Override
@@ -90,7 +90,7 @@ public class Process {
                 properties.setProperty("${property.key}","${property.value}");
                 </#list>
                 DataStream<${node.outClass}> ${node.curName} = env
-                        .addSource(new FlinkKafkaConsumer<${node.outClass}>("${node.kafkaConfig.topic}", new SimpleStringSchema(), properties));
+                        .addSource(new FlinkKafkaConsumer<${node.outClass}>("${node.kafkaConfig.topic}", new SimpleStringSchema(), (Properties) properties.clone()));
                 properties.clear();
             </#if>
 
@@ -99,7 +99,7 @@ public class Process {
             </#if>
 
             <#if node.type == "FlatMap">
-                SingleOutputStreamOperator<${node.outClass}> ${node.curName} = ${node.preName}.flatMap(new ${node.className}<${node.inClass},${node.outClass}>());
+                SingleOutputStreamOperator<${node.outClass}> ${node.curName} = ${node.preName}.flatMap(new ${node.className}());
             </#if>
 
             <#if node.type == "Map">
@@ -107,11 +107,11 @@ public class Process {
             </#if>
 
             <#if node.type == "KeySelect">
-                KeyedStream<${node.inClass},${node.outClass}> ${node.curName} = ${node.preName}.keyBy(new ${node.className}<${node.inClass},${node.outClass}>());
+                KeyedStream<${node.inClass},${node.outClass}> ${node.curName} = ${node.preName}.keyBy(new ${node.className}());
             </#if>
 
             <#if node.type == "Reduce">
-                SingleOutputStreamOperator<${node.outClass}> ${node.curName} = ${node.preName}.reduce(new ${node.className}<${node.outClass}>());
+                SingleOutputStreamOperator<${node.outClass}> ${node.curName} = ${node.preName}.reduce(new ${node.className}());
             </#if>
 
             <#if node.type == "Aggregation">
@@ -133,7 +133,7 @@ public class Process {
             </#if>
 
             <#if node.type == "Union">
-                SingleOutputStreamOperator ${node.curName} = ${node.preName}.union(${node.condition});
+                DataStream ${node.curName} = ${node.preName}.union(${node.condition});
             </#if>
 
             <#if node.type == "ConsleSink">

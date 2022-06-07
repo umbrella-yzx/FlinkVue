@@ -13,5 +13,8 @@ public class RedisConfig {
     private String password;    //密码
     private String exConfig;    //其余配置
     private String command; //读取redis的命令
-    private String key;     //读取的key
+    private String redisKey;     //读取的key
+
+    public RedisConfig() {
+    }
 }

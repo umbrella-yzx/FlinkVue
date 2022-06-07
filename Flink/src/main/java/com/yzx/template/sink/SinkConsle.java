@@ -1,6 +1,6 @@
 package com.yzx.template.sink;
 
-import com.yzx.test.Node;
+import com.yzx.template.Node;
 
 public class SinkConsle extends Node {
 

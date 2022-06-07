@@ -3,7 +3,7 @@ package com.yzx.utils;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzx.source.config.*;
-import com.yzx.test.Node;
+import com.yzx.template.Node;
 import com.yzx.template.Process;
 import com.yzx.template.entity.Entity;
 import com.yzx.template.entity.Property;

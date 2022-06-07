@@ -11,13 +11,16 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.api.java.tuple.*;
 
-public class ${csv.className}<${csv.entity.className}> {
+public class ${csv.className} {
     private CSVConfig csvConfig;
     private StreamExecutionEnvironment env = ApplicationEnv.getEnvironment();
     private StreamTableEnvironment tableEnv = ApplicationEnv.getTableEnvironment();
 
     public ${csv.className}(CSVConfig csvConfig) {
         this.csvConfig = csvConfig;
+    }
+
+    public ${csv.className}() {
     }
 
     public DataStream<${csv.entity.className}> getCsvDataStream(){

@@ -1,7 +1,7 @@
 package com.yzx.template.sink;
 
 import com.yzx.source.config.CSVConfig;
-import com.yzx.test.Node;
+import com.yzx.template.Node;
 
 public class SinkCSV extends Node {
     public CSVConfig csvConfig;

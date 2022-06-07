@@ -11,6 +11,9 @@ public class CSVConfig {
     private String path;
     private String exConfig;
 
+    public CSVConfig() {
+    }
+
     public CSVConfig(String path) {
         this.path = path;
     }

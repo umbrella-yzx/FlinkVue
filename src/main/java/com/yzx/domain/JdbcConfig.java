@@ -21,4 +21,7 @@ public class JdbcConfig {
         this.tableName = tableName;
         this.password = password;
     }
+
+    public JdbcConfig() {
+    }
 }

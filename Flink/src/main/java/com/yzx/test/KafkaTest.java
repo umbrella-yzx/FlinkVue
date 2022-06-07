@@ -6,7 +6,6 @@ import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +31,9 @@ public class KafkaTest {
         }
 
         DataStream<String> stream = env
-                .addSource(new FlinkKafkaConsumer<String>(kafkaConfig.getTopic(), new SimpleStringSchema(), properties));
+                .addSource(new FlinkKafkaConsumer<String>(kafkaConfig.getTopic(), new SimpleStringSchema(), (Properties) properties.clone()));
+
+        properties.clear();
 
         stream.print();
 

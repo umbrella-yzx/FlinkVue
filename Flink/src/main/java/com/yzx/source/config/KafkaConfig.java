@@ -1,7 +1,6 @@
 package com.yzx.source.config;
 
 import java.util.List;
-import java.util.Properties;
 
 public class KafkaConfig {
     private String topic;

@@ -1,15 +1,15 @@
 package com.yzx.template.source;
 
 import com.yzx.source.config.KafkaConfig;
-import com.yzx.test.Node;
+import com.yzx.template.Node;
 
 public class SourceKafka extends Node {
     public KafkaConfig kafkaConfig;
     public String outClass;
 
     public SourceKafka() {
-        javaPackage = "com.yzx.source";
-        className = "KafkaSource";
+//        javaPackage = "com.yzx.source";
+//        className = "KafkaSource";
         type = "KafkaSource";
         outClass = "String";
     }

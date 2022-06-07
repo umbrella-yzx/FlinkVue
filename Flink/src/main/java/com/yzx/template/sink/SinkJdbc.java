@@ -1,7 +1,7 @@
 package com.yzx.template.sink;
 
 import com.yzx.source.config.JdbcConfig;
-import com.yzx.test.Node;
+import com.yzx.template.Node;
 import com.yzx.template.entity.Entity;
 
 public class SinkJdbc extends Node {
