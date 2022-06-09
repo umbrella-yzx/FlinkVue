@@ -21,7 +21,7 @@ public class MyScores {
     @Override
     public String toString() {
         return "MyScores{" +
-                "id=" + id +","+ ", name='" + name + '\'' + ", Chinese=" + chinese +", English=" + english +", Math=" + math +
+                "id=" + id+ ", name='" + name + '\'' + ", Chinese=" + chinese +", English=" + english +", Math=" + math +
                 '}';
     }
 

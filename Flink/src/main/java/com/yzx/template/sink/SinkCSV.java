@@ -5,8 +5,6 @@ import com.yzx.template.Node;
 
 public class SinkCSV extends Node {
     public CSVConfig csvConfig;
-    //CSV对应POJO类
-    public String outClass;
     //是否为entity
     public Boolean isentity;
 
@@ -21,14 +19,6 @@ public class SinkCSV extends Node {
 
     public void setCsvConfig(CSVConfig csvConfig) {
         this.csvConfig = csvConfig;
-    }
-
-    public String getOutClass() {
-        return outClass;
-    }
-
-    public void setOutClass(String outClass) {
-        this.outClass = outClass;
     }
 
     public Boolean getIsentity() {

@@ -8,8 +8,6 @@ public class SourceRedis extends Node {
     public RedisConfig redisConfig;
     //redis输入类型
     public String inClass = "RedisRecord";
-    //redis输出类型
-    public String outClass;
 
     public SourceRedis(RedisConfig redisConfig) {
 //        javaPackage = "com.yzx.source";
@@ -45,13 +43,5 @@ public class SourceRedis extends Node {
 
     public void setInClass(String inClass) {
         this.inClass = inClass;
-    }
-
-    public String getOutClass() {
-        return outClass;
-    }
-
-    public void setOutClass(String outClass) {
-        this.outClass = outClass;
     }
 }

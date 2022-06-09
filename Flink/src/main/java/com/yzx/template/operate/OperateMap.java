@@ -8,8 +8,6 @@ import com.yzx.template.Node;
 public class OperateMap extends Node {
     //映射输入类型
     public String inClass;
-    //映射输出类型
-    public String outClass;
     //映射条件语句
     public String condition;
 
@@ -24,14 +22,6 @@ public class OperateMap extends Node {
 
     public void setInClass(String inClass) {
         this.inClass = inClass;
-    }
-
-    public String getOutClass() {
-        return outClass;
-    }
-
-    public void setOutClass(String outClass) {
-        this.outClass = outClass;
     }
 
     public String getCondition() {

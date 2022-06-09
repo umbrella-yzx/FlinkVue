@@ -6,9 +6,9 @@ package ${reduce.javaPackage};
 import org.apache.flink.api.common.functions.RichReduceFunction;
 import org.apache.flink.api.java.tuple.*;
 
-public class ${reduce.className} extends RichReduceFunction<${reduce.inClass}> {
+public class ${reduce.className} extends RichReduceFunction<${reduce.outClass}> {
     @Override
-    public ${reduce.inClass} reduce(${reduce.inClass} value1, ${reduce.inClass} value2) throws Exception {
+    public ${reduce.outClass} reduce(${reduce.outClass} value1, ${reduce.outClass} value2) throws Exception {
         ${reduce.condition};
     }
 }

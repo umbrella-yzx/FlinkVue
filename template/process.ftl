@@ -55,7 +55,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Process {
     public static void execute() throws Exception{
-        StreamExecutionEnvironment env = ApplicationEnv.getEnvironment();
+        StreamExecutionEnvironment env = ApplicationEnv.getRemoteEnvironment();
 
         Properties properties = new Properties();
 
@@ -138,6 +138,7 @@ public class Process {
 
             <#if node.type == "ConsleSink">
                 ${node.preName}.print();
+<#--                ${node.preName}.addSink(new ${node.className}());-->
             </#if>
 
             <#if node.type == "JdbcSink">

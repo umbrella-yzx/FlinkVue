@@ -5,7 +5,6 @@ import com.yzx.template.Node;
 
 public class SourceKafka extends Node {
     public KafkaConfig kafkaConfig;
-    public String outClass;
 
     public SourceKafka() {
 //        javaPackage = "com.yzx.source";
@@ -20,13 +19,5 @@ public class SourceKafka extends Node {
 
     public void setKafkaConfig(KafkaConfig kafkaConfig) {
         this.kafkaConfig = kafkaConfig;
-    }
-
-    public String getOutClass() {
-        return outClass;
-    }
-
-    public void setOutClass(String outClass) {
-        this.outClass = outClass;
     }
 }

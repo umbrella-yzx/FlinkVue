@@ -7,14 +7,11 @@ public class SourceHDFS extends Node {
 
     public HDFSConfig hdfsConfig;
 
-    //类型为String不用外部赋值
-    public String outClass;
-
     public SourceHDFS() {
 //        javaPackage = "com.yzx.source";
 //        className = "HDFSSource";
         type = "HDFSSource";
-        outClass = "String";
+        outClass = "String";//类型为String不用外部赋值
     }
 
     public HDFSConfig getHdfsConfig() {
@@ -23,13 +20,5 @@ public class SourceHDFS extends Node {
 
     public void setHdfsConfig(HDFSConfig hdfsConfig) {
         this.hdfsConfig = hdfsConfig;
-    }
-
-    public String getOutClass() {
-        return outClass;
-    }
-
-    public void setOutClass(String outClass) {
-        this.outClass = outClass;
     }
 }

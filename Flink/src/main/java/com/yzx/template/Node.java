@@ -18,6 +18,8 @@ public class Node {
     public String className;
     //需要导入的包
     public List<String> inPackages = new ArrayList<>();
+    //节点的输出类型，一方面指定节点输出类型，一方面用作类型传递
+    public String outClass;
 
     public String getPreName() {
         return preName;
@@ -73,5 +75,13 @@ public class Node {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getOutClass() {
+        return outClass;
+    }
+
+    public void setOutClass(String outClass) {
+        this.outClass = outClass;
     }
 }

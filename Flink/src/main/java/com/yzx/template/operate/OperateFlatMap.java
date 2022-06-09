@@ -8,8 +8,6 @@ import com.yzx.template.Node;
 public class OperateFlatMap extends Node {
     //过滤的泛型类型
     public String inClass;
-    //映射输出类型
-    public String outClass;
     //过滤的条件语句
     public String condition;
 
@@ -32,13 +30,5 @@ public class OperateFlatMap extends Node {
 
     public void setCondition(String condition) {
         this.condition = condition;
-    }
-
-    public String getOutClass() {
-        return outClass;
-    }
-
-    public void setOutClass(String outClass) {
-        this.outClass = outClass;
     }
 }

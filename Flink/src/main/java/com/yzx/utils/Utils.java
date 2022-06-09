@@ -10,7 +10,7 @@ import com.yzx.template.entity.Property;
 import com.yzx.template.entity.PropertyType;
 import com.yzx.template.operate.*;
 import com.yzx.template.sink.SinkCSV;
-import com.yzx.template.sink.SinkConsle;
+import com.yzx.template.sink.SinkConsole;
 import com.yzx.template.sink.SinkJdbc;
 import com.yzx.template.source.*;
 import freemarker.template.Configuration;
@@ -18,6 +18,11 @@ import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import org.apache.commons.collections.map.HashedMap;
+
+import org.apache.maven.shared.invoker.*;
+
+import java.io.File;
+import java.util.Collections;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
@@ -96,6 +101,8 @@ public class Utils {
 
         Utils.generateProcess(json);
 
+        mvnBuild();
+
         try{
             //通过反射方法动态执行
             //1、首先构建文件的目录url地址，
@@ -112,6 +119,37 @@ public class Utils {
             e.printStackTrace();
         }
 
+    }
+
+    public static void mvnBuild(){
+        InvocationRequest request = new DefaultInvocationRequest();
+        request.setPomFile( new File( "E:\\Java\\Workspace\\FlinkVue\\Flink\\pom.xml" ) );
+        request.setGoals( Collections.singletonList( "clean" ) );
+        request.setGoals( Collections.singletonList( "compile" ) );
+        request.setGoals( Collections.singletonList( "package" ) );
+
+        Invoker invoker = new DefaultInvoker();
+        invoker.setMavenHome(new File("E:\\Java\\IntelliJ IDEA 2021.2.2\\plugins\\maven\\lib\\maven3"));
+
+        /*invoker.setLogger(new PrintStreamLogger(System.err,  InvokerLogger.ERROR){
+
+        } );
+        invoker.setOutputHandler(new InvocationOutputHandler() {
+            @Override
+            public void consumeLine(String s) throws IOException {
+
+            }
+        });
+        */
+
+        try
+        {
+            invoker.execute( request );
+        }
+        catch (MavenInvocationException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -226,6 +264,13 @@ public class Utils {
                     javaFile = toJavaFilename(outDirFile, ((OperateFlatMap)obj).javaPackage, ((OperateFlatMap)obj).className);
                     path = ((OperateFlatMap)obj).getJavaPackage()+"."+((OperateFlatMap)obj).getClassName();
                     root.put("flatmap", ((OperateFlatMap)obj));
+                    break;
+                }
+                //FlatMap
+                case 10:{
+                    javaFile = toJavaFilename(outDirFile, ((SinkConsole)obj).javaPackage, ((SinkConsole)obj).className);
+                    path = ((SinkConsole)obj).getJavaPackage()+"."+((SinkConsole)obj).getClassName();
+                    root.put("consolesink", ((SinkConsole)obj));
                     break;
                 }
                 default:break;
@@ -451,6 +496,85 @@ public class Utils {
             nodes.add(Utils.name2nodeMap.get(idx2name.get(list.get(i))));
         }
 
+        //根据拓扑排序结果设置类名，对于如映射等操作，已知他前一节点的类型，则不需要用户手动输入，直接获取前一个节点类类型即可
+        //生成代码
+        List<String> types = new ArrayList(Arrays.asList(new String[]{"HDFSSource", "KafkaSource", "RedisSource"}));
+        for(Node node:nodes){
+            switch (node.type){
+                case "CSVSource":Utils.generateCode((SourceCSV)node,5,"source_csv.ftl");break;//生成代码
+                case "JdbcSource":Utils.generateCode((SourceJdbc)node,1,"source_jdbc.ftl");break;//生成代码
+                case "JdbcSink":{   //设置输入类的同时生成代码
+                    SinkJdbc sinkJdbc = (SinkJdbc) Utils.name2nodeMap.get(node.curName);
+                    List<String> inPackage = new ArrayList<>();
+                    String outClass = Utils.name2nodeMap.get(sinkJdbc.getPreName()).getOutClass();
+                    inPackage.add("com.yzx.entity."+outClass);
+                    sinkJdbc.setInPackages(inPackage);
+                    sinkJdbc.setEntity(Utils.name2entityMap.get(outClass));
+                    //生成代码
+                    Utils.generateCode(sinkJdbc,6,"sink_jdbc.ftl");
+                }break;
+                case "FlatMap":{
+                    ((OperateFlatMap)node).setInClass((Utils.name2nodeMap.get(node.getPreName())).getOutClass());
+                    if(Utils.name2entityMap.containsKey(((OperateFlatMap)node).getInClass())){
+                        ((OperateFlatMap)node).getInPackages().add("com.yzx.entity."+((OperateFlatMap)node).getInClass());
+                    }
+                    //生成代码
+                    Utils.generateCode((OperateFlatMap)node,9,"operator_flatmap.ftl");
+                }break;
+                case "KeySelect":{
+                    ((OperateKeySelect)node).setInClass((Utils.name2nodeMap.get(node.getPreName())).getOutClass());
+                    if(Utils.name2entityMap.containsKey(((OperateKeySelect)node).getInClass())){
+                        ((OperateKeySelect)node).getInPackages().add("com.yzx.entity."+((OperateKeySelect)node).getInClass());
+                    }
+                    //生成代码
+                    Utils.generateCode((OperateKeySelect)node,8,"operator_keyby.ftl");
+                }break;
+                case "Map":{
+                    ((OperateMap)node).setInClass((Utils.name2nodeMap.get(node.getPreName())).getOutClass());
+                    if(Utils.name2entityMap.containsKey(((OperateMap)node).getInClass())){
+                        ((OperateMap)node).getInPackages().add("com.yzx.entity."+((OperateMap)node).getInClass());
+                    }
+                    //生成代码
+                    Utils.generateCode((OperateMap)node,3,"operator_map.ftl");
+                }break;
+                default:{
+                    if(!types.contains(node.type)){
+                        node.setOutClass((Utils.name2nodeMap.get(node.getPreName())).getOutClass());
+                        //生成代码
+                        switch (node.type){
+                            case "Filter": {
+                                if(Utils.name2entityMap.containsKey(node.getOutClass())){
+                                    List<String> inPackage = new ArrayList<>();
+                                    inPackage.add("com.yzx.entity."+node.getOutClass());
+                                    node.setInPackages(inPackage);
+                                }
+                                Utils.generateCode((OperateFilter)node,2,"operator_filter.ftl");
+                            }break;
+                            case "Reduce": {
+                                List<String> inPackage = new ArrayList<>();
+                                if(Utils.name2entityMap.containsKey(node.getOutClass())){
+                                    inPackage.add("com.yzx.entity."+node.getOutClass());
+                                }
+                                node.setInPackages(inPackage);
+                                Utils.generateCode((OperateReduce)node,7,"operator_reduce.ftl");
+                            }break;
+                            case "CSVSink":{
+                                if(Utils.name2entityMap.containsKey(node.getOutClass()))((SinkCSV)node).setIsentity(true);
+                            }break;
+                            case "ConsleSink":{
+                                List<String> inPackage = new ArrayList<>();
+                                if(Utils.name2entityMap.containsKey(node.getOutClass())){
+                                    inPackage.add("com.yzx.entity."+node.getOutClass());
+                                }
+                                node.setInPackages(inPackage);
+                                Utils.generateCode((SinkConsole)node,10,"sink_console.ftl");
+                            }break;
+                        }
+                    }
+                }break;
+            }
+        }
+
         Process process = new Process();
         process.setNodes(nodes);
 
@@ -508,9 +632,7 @@ public class Utils {
         sourceJdbc.setInPackages(inPackage);
         sourceJdbc.setEntity(Utils.name2entityMap.get(object.getString("dataResourceDingyi")));
         sourceJdbc.setClassName(Utils.getRandomString(sourceJdbc.getType()));
-
-        //生成代码
-        Utils.generateCode(sourceJdbc,1,"source_jdbc.ftl");
+        sourceJdbc.setOutClass(object.getString("dataResourceDingyi"));
 
         return sourceJdbc;
     }
@@ -534,6 +656,7 @@ public class Utils {
         sourceCSV.setInPackages(inPackage);
         sourceCSV.setClassName(Utils.getRandomString(sourceCSV.getType()));
         sourceCSV.curName = object.getString("id");
+        sourceCSV.setOutClass(object.getString("dataResourceDingyi"));
 
         //根据Entity生成Sql语句
         List<Property> properties = entity.getProperties();
@@ -550,9 +673,6 @@ public class Utils {
                 ")");
 
         sourceCSV.setSql(sb.toString());
-
-        //生成代码
-        Utils.generateCode(sourceCSV,5,"source_csv.ftl");
 
         return sourceCSV;
     }
@@ -634,7 +754,6 @@ public class Utils {
             default:break;
         }
         operateAggregation.setCondition(object.getString("Aggregation_tiaojian"));
-        operateAggregation.setOutClass(object.getString("Aggregation_inLei"));
         operateAggregation.curName = object.getString("id");
 
         return operateAggregation;
@@ -643,29 +762,16 @@ public class Utils {
     private static OperateFilter generateOperateFilter(JSONObject object){
         OperateFilter filter = new OperateFilter();
         filter.setCondition(object.getString("Filter_tiaojian"));
-        filter.setOutClass(object.getString("Filter_inLei"));
-        if(Utils.name2entityMap.containsKey(object.getString("Filter_inLei"))){
-            List<String> inPackage = new ArrayList<>();
-            inPackage.add("com.yzx.entity."+object.getString("Filter_inLei"));
-            filter.setInPackages(inPackage);
-        }
         filter.setClassName(Utils.getRandomString(filter.getType()));
         filter.curName = object.getString("id");
-
-        //生成代码
-        Utils.generateCode(filter,2,"operator_filter.ftl");
 
         return filter;
     }
 
     private static OperateFlatMap generateOperateFlatMap(JSONObject object) {
         OperateFlatMap flatMap = new OperateFlatMap();
-        flatMap.setInClass(object.getString("FlatMap_inLei"));
         flatMap.setOutClass(object.getString("FlatMap_outLei"));
         List<String> inPackage = new ArrayList<>();
-        if(Utils.name2entityMap.containsKey(object.getString("FlatMap_inLei"))){
-            inPackage.add("com.yzx.entity."+object.getString("FlatMap_inLei"));
-        }
         if(Utils.name2entityMap.containsKey(object.getString("FlatMap_outLei"))){
             inPackage.add("com.yzx.entity."+object.getString("FlatMap_outLei"));
         }
@@ -674,20 +780,13 @@ public class Utils {
         flatMap.setClassName(Utils.getRandomString(flatMap.getType()));
         flatMap.curName = object.getString("id");
 
-        //生成代码
-        Utils.generateCode(flatMap,9,"operator_flatmap.ftl");
-
         return flatMap;
     }
 
     private static OperateKeySelect generateOperateKeySelect(JSONObject object) {
         OperateKeySelect operateKeySelect = new OperateKeySelect();
-        operateKeySelect.setInClass(object.getString("KeyBy_inLei"));
         operateKeySelect.setOutClass(object.getString("KeyBy_outLei"));
         List<String> inPackage = new ArrayList<>();
-        if(Utils.name2entityMap.containsKey(object.getString("KeyBy_inLei"))){
-            inPackage.add("com.yzx.entity."+object.getString("KeyBy_inLei"));
-        }
         if(Utils.name2entityMap.containsKey(object.getString("KeyBy_outLei"))){
             inPackage.add("com.yzx.entity."+object.getString("KeyBy_outLei"));
         }
@@ -696,20 +795,13 @@ public class Utils {
         operateKeySelect.setClassName(Utils.getRandomString(operateKeySelect.getType()));
         operateKeySelect.curName = object.getString("id");
 
-        //生成代码
-        Utils.generateCode(operateKeySelect,8,"operator_keyby.ftl");
-
         return operateKeySelect;
     }
 
     private static OperateMap generateOperateMap(JSONObject object) {
         OperateMap map = new OperateMap();
-        map.setInClass(object.getString("Map_inLei"));
         map.setOutClass(object.getString("Map_outLei"));
         List<String> inPackage = new ArrayList<>();
-        if(Utils.name2entityMap.containsKey(object.getString("Map_inLei"))){
-            inPackage.add("com.yzx.entity."+object.getString("Map_inLei"));
-        }
         if(Utils.name2entityMap.containsKey(object.getString("Map_outLei"))){
             inPackage.add("com.yzx.entity."+object.getString("Map_outLei"));
         }
@@ -718,26 +810,14 @@ public class Utils {
         map.setClassName(Utils.getRandomString(map.getType()));
         map.curName = object.getString("id");
 
-        //生成代码
-        Utils.generateCode(map,3,"operator_map.ftl");
-
         return map;
     }
 
     private static OperateReduce generateOperateReduce(JSONObject object) {
         OperateReduce reduce = new OperateReduce();
-        reduce.setOutClass(object.getString("Reduce_inLei"));
-        List<String> inPackage = new ArrayList<>();
-        if(Utils.name2entityMap.containsKey(object.getString("Reduce_inLei"))){
-            inPackage.add("com.yzx.entity."+object.getString("Reduce_inLei"));
-        }
         reduce.setCondition(object.getString("Reduce_tiaojian"));
-        reduce.setInPackages(inPackage);
         reduce.setClassName(Utils.getRandomString(reduce.getType()));
         reduce.curName = object.getString("id");
-
-        //生成代码
-        Utils.generateCode(reduce,7,"operator_reduce.ftl");
 
         return reduce;
     }
@@ -749,9 +829,12 @@ public class Utils {
         return union;
     }
 
-    private static SinkConsle generateSinkConsle(JSONObject object){
-        SinkConsle sinkConsle = new SinkConsle();
-        return sinkConsle;
+    private static SinkConsole generateSinkConsle(JSONObject object){
+        SinkConsole sinkConsole = new SinkConsole();
+        sinkConsole.setCurName(object.getString("id"));
+        sinkConsole.setClassName(Utils.getRandomString(sinkConsole.getType()));
+
+        return sinkConsole;
     }
 
     private static SinkJdbc generateSinkJdbc(JSONObject object){
@@ -765,14 +848,7 @@ public class Utils {
         SinkJdbc sinkJdbc = new SinkJdbc();
         sinkJdbc.curName = object.getString("id");
         sinkJdbc.setJdbcConfig(jdbcConfig);
-        List<String> inPackage = new ArrayList<>();
-        inPackage.add("com.yzx.entity."+object.getString("dataResultMySql_dataPeizhi"));
-        sinkJdbc.setInPackages(inPackage);
-        sinkJdbc.setEntity(Utils.name2entityMap.get(object.getString("dataResultMySql_dataPeizhi")));
         sinkJdbc.setClassName(Utils.getRandomString(sinkJdbc.getType()));
-
-        //生成代码
-        Utils.generateCode(sinkJdbc,6,"sink_jdbc.ftl");
 
         return sinkJdbc;
     }
@@ -784,8 +860,6 @@ public class Utils {
 
         SinkCSV sinkCSV = new SinkCSV();
         sinkCSV.setCsvConfig(csvConfig);
-        sinkCSV.setOutClass(object.getString("dataResultCSV_outLei"));
-        if(Utils.name2entityMap.containsKey(object.getString("dataResultCSV_outLei")))sinkCSV.setIsentity(true);
 
         return sinkCSV;
     }

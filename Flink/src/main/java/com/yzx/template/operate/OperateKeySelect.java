@@ -33,12 +33,4 @@ public class OperateKeySelect extends Node {
     public void setCondition(String condition) {
         this.condition = condition;
     }
-
-    public String getOutClass() {
-        return outClass;
-    }
-
-    public void setOutClass(String outClass) {
-        this.outClass = outClass;
-    }
 }
