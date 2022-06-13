@@ -8,10 +8,6 @@ package ${process.javaPackage};
 </#list>
 import com.yzx.source.config.JdbcConfig;
 import com.yzx.utils.ApplicationEnv;
-import com.yzx.utils.Utils;
-import com.yzx.template.entity.Entity;
-import com.yzx.template.entity.Property;
-import com.yzx.template.entity.PropertyType;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
@@ -53,9 +49,9 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 
-public class Process {
-    public static void execute() throws Exception{
-        StreamExecutionEnvironment env = ApplicationEnv.getRemoteEnvironment();
+public class ${process.className} {
+    public static void main(String[] args) throws Exception {
+        StreamExecutionEnvironment env = ApplicationEnv.getEnvironment();
 
         Properties properties = new Properties();
 

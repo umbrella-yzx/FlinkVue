@@ -1,10 +1,10 @@
 package com.yzx.source.config;
 
-import com.alibaba.fastjson.JSONObject;
-
 import java.io.Serializable;
 
 public class JdbcConfig implements Serializable {
+    private static final long serialVersionUID = 4125096758372084309L;
+
     private int id;
     private String driverName ="com.mysql.jdbc.Driver";     //驱动名称
     private String url = "jdbc:mysql://localhost:3306/test";  //数据库Url
@@ -85,15 +85,5 @@ public class JdbcConfig implements Serializable {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public JSONObject toJsonObject(){
-        JSONObject obj=new JSONObject();//创建JSONObject对象
-        obj.put("driverName",driverName);
-        obj.put("DBUrl", url);
-        obj.put("userName",userName);
-        obj.put("tableName",tableName);
-        obj.put("password",password);
-        return obj;
     }
 }

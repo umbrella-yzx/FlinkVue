@@ -8,6 +8,9 @@ public class ApplicationEnv {
     private static StreamExecutionEnvironment env;
     private static StreamTableEnvironment tableEnv;
     private static StreamExecutionEnvironment remoteEnv;
+
+    public static int version = 1;
+
     private ApplicationEnv(){
 
     }
@@ -21,7 +24,7 @@ public class ApplicationEnv {
 
     public static StreamExecutionEnvironment getRemoteEnvironment() {
         if (remoteEnv == null) {
-            remoteEnv = StreamExecutionEnvironment.createRemoteEnvironment("192.168.10.102", 8081, "E:\\Java\\Workspace\\FlinkVue\\Flink\\target\\Flink-1.0-SNAPSHOT-jar-with-dependencies.jar");
+            remoteEnv = StreamExecutionEnvironment.createRemoteEnvironment("192.168.10.102", 8081, "E:\\Java\\Workspace\\FlinkVue\\Flink\\target\\Flink-"+version+".0-SNAPSHOT-jar-with-dependencies.jar");
         }
         return remoteEnv;
     }

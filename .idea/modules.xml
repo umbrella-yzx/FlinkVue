@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/CodeGenerate/CodeGenerate.iml" filepath="$PROJECT_DIR$/CodeGenerate/CodeGenerate.iml" />
       <module fileurl="file://$PROJECT_DIR$/Flink/Flink.iml" filepath="$PROJECT_DIR$/Flink/Flink.iml" />
       <module fileurl="file://$PROJECT_DIR$/FlinkVue.iml" filepath="$PROJECT_DIR$/FlinkVue.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../../VSCode/workspace/Vue/Vue.iml" filepath="$PROJECT_DIR$/../../../VSCode/workspace/Vue/Vue.iml" />
