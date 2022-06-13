@@ -5,6 +5,12 @@ spring:
     password: root
     type: com.alibaba.druid.pool.DruidDataSource
     url: jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=UTF-8&useSSL=false
+  servlet:
+    multipart:
+      enabled: true # 开启文件上传
+      file-size-threshold: 2KB # 文件写入磁盘的阈值
+      max-file-size: 200MB
+      max-request-size: 215MB # 最大请求值大小
 
 mybatis-plus:
   configuration:
@@ -15,3 +21,8 @@ mybatis-plus:
       table-underline: false
 server:
   port: 9355
+
+# 自定义文件保存路径
+file:
+  root:
+    path: F:\dir\
