@@ -7,6 +7,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 public class Test {
     public static void main(String[] args) throws Exception {
@@ -22,6 +23,7 @@ public class Test {
 //        String path = "/jars/c6279a49-ae26-4a55-a5d3-780ffcddb01b_Flink-1.0-SNAPSHOT-jar-with-dependencies.jar/run";
 //        String param = "?entry-class=com.yzx.process.ProcessPMkOZ";
 //        restCallerPost(path,param);
+        List<String> str = new ArrayList<>();
     }
 
     public static String execCurl() {

@@ -1,5 +1,8 @@
 package com.yzx.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MyScores {
     public int id;
     public String name;
@@ -16,13 +19,6 @@ public class MyScores {
         this.chinese = chinese;
         this.english = english;
         this.math = math;
-    }
-
-    @Override
-    public String toString() {
-        return "MyScores{" +
-                "id=" + id+ ", name='" + name + '\'' + ", Chinese=" + chinese +", English=" + english +", Math=" + math +
-                '}';
     }
 
     public String toCSVString(){

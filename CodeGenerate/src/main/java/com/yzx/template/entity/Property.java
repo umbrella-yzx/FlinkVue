@@ -5,6 +5,16 @@ public class Property {
     private String javaType;
     // 属性名称
     private String propertyName;
+    //后缀，生成代码用
+    private String suffix;
+
+    public String getSuffix() {
+        return suffix;
+    }
+
+    public void setSuffix(String suffix) {
+        this.suffix = suffix;
+    }
 
     private PropertyType propertyType;
 

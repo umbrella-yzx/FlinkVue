@@ -1,5 +1,6 @@
 package com.yzx.template.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Entity {
@@ -13,6 +14,16 @@ public class Entity {
     List<Property> properties;
     // 是否有构造函数
     private boolean constructors;
+    //需要导入的包
+    private List<String> inPackages = new ArrayList<>();
+
+    public List<String> getInPackages() {
+        return inPackages;
+    }
+
+    public void setInPackages(List<String> inPackages) {
+        this.inPackages = inPackages;
+    }
 
     public String getJavaPackage() {
         return javaPackage;

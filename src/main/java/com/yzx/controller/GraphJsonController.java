@@ -1,6 +1,8 @@
 package com.yzx.controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.yzx.domain.FlinkJob;
 import com.yzx.utils.Utils;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -12,6 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -21,24 +26,39 @@ import java.util.List;
 public class GraphJsonController {
     private String entityJson;
 
+    private String flinkUrl;
+
     @Autowired
     private RestTemplate restTemplate;
 
-    @GetMapping("/postJob")
-    public int postJob(){
-
-        return 0;
+    /**
+     * 获取前端的集群URL
+     * @param flinkUrl
+     * @return
+     */
+    @PostMapping("/flinkUrl")
+    public String getFlinkUrl(@RequestBody String flinkUrl){
+        this.flinkUrl = flinkUrl.replace("\"","");
+//        System.out.println(flinkUrl);
+        return flinkUrl;
     }
 
     private static int VERSION = 1;
 
+    /**
+     * 任务开始执行
+     * @param json
+     * @return
+     */
     @PostMapping("/graphJson")
     public String graphJson(@RequestBody String json){
+        if(flinkUrl==null||flinkUrl.equals(""))return "error";
+
         String fileid="";
         Utils.deleteFile();
 //        javaChangeVersion();
 
-        List<String> execute = Utils.execute(entityJson, json);
+        List<String> execute = Utils.execute(entityJson, json,flinkUrl);
 
         JSONObject object = JSONObject.parseObject(execute.get(0));
         if(object.getString("status").equals("success")){
@@ -47,12 +67,60 @@ public class GraphJsonController {
             fileid=split[split.length-1];
         }
         String tmp = "";
-        restTemplate.postForObject("http://192.168.10.102:8081/jars/"+fileid+
+        restTemplate.postForObject(flinkUrl+"/jars/"+fileid+
                 "/run?entry-class=com.yzx.process."+execute.get(1),tmp,String.class);
         return json;
     }
 
-    //恢复初始版本的pom.xml
+    /**
+     * 终止某个Job
+     * @param jid 要终止的job的id
+     * @return
+     */
+    @PostMapping("/cancelJob")
+    public int cancelJob(@RequestBody String jid){
+        String str = "";
+        restTemplate.patchForObject(flinkUrl+"/jobs/"+jid.replace("\"",""),str,String.class);
+        return 0;
+    }
+
+    /**
+     * 返回集群中的Jobs
+     * @return
+     */
+    @GetMapping("/jobs")
+    public List<FlinkJob> getJobs(){
+        String str = "";
+        str = restTemplate.getForObject(flinkUrl+"/jobs/overview",String.class);
+        System.out.println(str);
+        JSONObject root = JSONObject.parseObject(str);
+        JSONArray jobs = root.getJSONArray("jobs");
+        List<FlinkJob> flinkJobs = new ArrayList<>();
+        for(int i = 0;i<jobs.size();++i){
+            JSONObject job =(JSONObject) jobs.get(i);
+            FlinkJob flinkJob = new FlinkJob();
+            flinkJob.setJid(job.getString("jid"));
+            flinkJob.setJobName(job.getString("name"));
+            flinkJob.setStatus(job.getString("state"));
+
+            SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            flinkJob.setStartTime(format1.format(Long.parseLong(job.getString("start-time"))));
+            if(!job.getString("end-time").equals("-1")){
+                flinkJob.setEndTime(format1.format(Long.parseLong(job.getString("end-time"))));
+            }
+            SimpleDateFormat format2 = new SimpleDateFormat("HH:mm:ss");
+            flinkJob.setDuration(format2.format(Long.parseLong(job.getString("duration"))));
+
+            flinkJobs.add(flinkJob);
+            System.out.println(flinkJob);
+        }
+
+        return flinkJobs;
+    }
+
+    /**
+     * 恢复初始版本的pom.xml
+     */
     public static void recoverPom(){
         String filePath="E:\\Java\\Workspace\\FlinkVue\\Flink\\pom.xml";
 
@@ -88,6 +156,10 @@ public class GraphJsonController {
         }
     }
 
+    /**
+     * 修改pom.xml文件中的版本
+     */
+    @Deprecated
     public static void javaChangeVersion() {
         String filePath="E:\\Java\\Workspace\\FlinkVue\\Flink\\pom.xml";
 
@@ -128,7 +200,12 @@ public class GraphJsonController {
 
     }
 
-    // 下面的为固定代码---------可以完成java对XML的写,改等操作
+    /**
+     * 固定代码---------可以完成java对XML的写,改等操作
+     * @param document
+     * @param xmlFile
+     * @throws IOException
+     */
     public static void saveDocument(Document document, File xmlFile) throws IOException {
         Writer osWrite = new OutputStreamWriter(new FileOutputStream(xmlFile));// 创建输出流
         OutputFormat format = OutputFormat.createPrettyPrint(); // 获取输出的指定格式
@@ -140,6 +217,11 @@ public class GraphJsonController {
         writer.close();
     }
 
+    /**
+     * 实体类的Json字符串
+     * @param json
+     * @return
+     */
     @PostMapping("/entityJson")
     public String entityJson(@RequestBody String json){
         entityJson = json;

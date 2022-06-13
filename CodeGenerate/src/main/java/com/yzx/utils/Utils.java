@@ -1,5 +1,6 @@
 package com.yzx.utils;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzx.source.config.*;
@@ -94,11 +95,11 @@ public class Utils {
 
     public static ArrayList<String> generateFile = new ArrayList<>();
 
-    public static List<String> execute(String entityJson,String json){
-        //当前 Java 应用程序相关的运行时对象
-        Runtime run=Runtime.getRuntime();
-        //程序结束时删除所有生成的文件
-        run.addShutdownHook(new Thread(Utils::deleteFile));
+    public static List<String> execute(String entityJson,String json,String flinkUrl){
+//        //当前 Java 应用程序相关的运行时对象
+//        Runtime run=Runtime.getRuntime();
+//        //程序结束时删除所有生成的文件
+//        run.addShutdownHook(new Thread(Utils::deleteFile));
 
         List<String> res = new ArrayList<>();
 
@@ -132,17 +133,21 @@ public class Utils {
 
 //        Utils.deleteFile();
 
-        String s = execCurl();
+        String s = execCurl(flinkUrl);
         res.add(s);
         res.add(Utils.EntryClass);
         return res;
 
     }
 
-    public static String execCurl() {
+    /**
+     * 上传jar包
+     * @return 返回jarName
+     */
+    public static String execCurl(String flinkUrl) {
         String[] cmds={"curl","-X", "POST",  "--header", "\"Except:\"","-F",
                 "\"jarfile=@E:\\Java\\Workspace\\FlinkVue\\Flink\\target\\Flink-1.0-SNAPSHOT-jar-with-dependencies.jar\""
-                ,"http://192.168.10.102:8081/jars/upload"};//必须分开写，不能有空格
+                ,flinkUrl+"/jars/upload"};//必须分开写，不能有空格
 
         ProcessBuilder process = new ProcessBuilder(cmds);
         java.lang.Process p;
@@ -423,8 +428,17 @@ public class Utils {
             for (int j = 0; j < fields.size(); ++j) {
                 JSONObject field = fields.getJSONObject(j);
                 Property attribute = new Property();
-                attribute.setJavaType(field2javaMap.get(field.getString("type").toLowerCase(Locale.ROOT)));
-                attribute.setPropertyName(field.getString("name"));
+                String type = field.getString("type");
+                if(type.equals("List")){
+                    attribute.setJavaType("List<"+field.getString("GenericsClass")+">");
+                    entity.getInPackages().add("com.yzx.entity."+field.getString("GenericsClass"));
+                    attribute.setPropertyName(field.getString("name"));
+                    attribute.setSuffix(" = new ArrayList<>()");
+                }else{
+                    attribute.setJavaType(field2javaMap.get(type.toLowerCase(Locale.ROOT)));
+                    attribute.setPropertyName(field.getString("name"));
+                    attribute.setSuffix("");
+                }
                 attribute.setPropertyType(field2typeMap.get(field.getString("type").toLowerCase(Locale.ROOT)));
                 propertyList.add(attribute);
             }
@@ -568,7 +582,12 @@ public class Utils {
 
         //根据拓扑排序结果设置类名，对于如映射等操作，已知他前一节点的类型，则不需要用户手动输入，直接获取前一个节点类类型即可
         //生成代码
-        List<String> types = new ArrayList(Arrays.asList(new String[]{"HDFSSource", "KafkaSource", "RedisSource"}));
+        //方便起见，把所有用户生成的Entity都加入到节点需要导入的包中
+        List<String> inPackages = new ArrayList<>();
+        for(String key:name2entityMap.keySet()){
+            inPackages.add("com.yzx.entity."+key);
+        }
+        List<String> types = new ArrayList<>(Arrays.asList("HDFSSource", "KafkaSource", "RedisSource"));
         for(Node node:nodes){
             switch (node.type){
                 case "CSVSource":Utils.generateCode((SourceCSV)node,5,"source_csv.ftl");break;//生成代码
@@ -643,6 +662,8 @@ public class Utils {
                     }
                 }break;
             }
+            //直接导入所有的Entity
+            node.inPackages = inPackages;
         }
 
         Process process = new Process();
@@ -876,7 +897,27 @@ public class Utils {
         if(Utils.name2entityMap.containsKey(object.getString("Map_outLei"))){
             inPackage.add("com.yzx.entity."+object.getString("Map_outLei"));
         }
-        map.setCondition(object.getString("Map_tiaojian"));
+        if(object.getString("Map_bool").equals("0")){
+            map.setCondition(object.getString("Map_tiaojian"));
+        }else{
+            StringBuilder sb = new StringBuilder();
+            String replace = map.outClass.replace(" ", "");
+            if(replace.indexOf("List<")==0){
+                sb.append(map.outClass+" out = new ArrayList<>();\n");
+            }else if(Utils.name2entityMap.containsKey(map.outClass)){
+                sb.append(map.outClass+" out = new "+map.outClass+"();\n");
+            }else {
+                sb.append(map.outClass+" out;\n");
+            }
+            JSONArray map_typeFieldList = object.getJSONArray("Map_TypeFieldList");
+            for (int i=0;i<map_typeFieldList.size();++i){
+                JSONObject field = map_typeFieldList.getJSONObject(i);
+                String s = field.getString("map_NewTypeField") +"="+field.getString("map_OldTypeField")+";\n";
+                sb.append(s);
+            }
+            sb.append("return out;");
+            map.setCondition(sb.toString());
+        }
         map.setInPackages(inPackage);
         map.setClassName(Utils.getRandomString(map.getType()));
         map.curName = object.getString("id");
