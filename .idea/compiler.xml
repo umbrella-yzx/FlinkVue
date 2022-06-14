@@ -16,6 +16,7 @@
       <module name="CodeGenerate" target="8" />
       <module name="Flink" target="1.8" />
       <module name="FlinkVue" target="1.8" />
+      <module name="SourceTest" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">

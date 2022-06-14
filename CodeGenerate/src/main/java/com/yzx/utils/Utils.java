@@ -1,6 +1,5 @@
 package com.yzx.utils;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yzx.source.config.*;
@@ -24,8 +23,6 @@ import org.apache.maven.shared.invoker.*;
 import java.io.File;
 import java.util.Collections;
 
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -48,7 +45,15 @@ public class Utils {
     //映射java数据类型到MySQL数据类型
     public static Map<String, String> java2sqlMap = new HashMap<>();
 
+    //管理类名，防止类名重复
     private static List<String> className = new ArrayList<>();
+
+    //对于用户自定义的jar中的类，保存起来
+    private static List<String> udfClass = new ArrayList<>();
+
+    //JobName每个任务的名称
+    public static String jobName;
+
 
     public static int version = 1;
 
@@ -140,13 +145,77 @@ public class Utils {
 
     }
 
+    public static List<String> getJarsName(String json){
+        JSONObject jsonObject = JSONObject.parseObject(json);
+        JSONArray nodeList = jsonObject.getJSONArray("nodeList");
+        Set<String> jars = new HashSet<>();
+        for(int i=0;i<nodeList.size();++i){
+            JSONObject object = (JSONObject) nodeList.get(i);
+            if(object.getString("type").equals("dataResource")&&object.getString("state").equals("Any")){
+                if(object.getString("udf_source_jar")!=null&&!object.getString("udf_source_jar").equals("")){
+                    jars.add(object.getString("udf_source_jar"));
+                }
+            }else if(object.getString("type").equals("UserDefineFunction")){
+                if(object.getString("udf_function_jar")!=null&&!object.getString("udf_function_jar").equals("")){
+                    jars.add(object.getString("udf_function_jar"));
+                }
+            }
+        }
+        return new ArrayList<>(jars);
+    }
+
+    /**
+     * 将本地的jar上传到仓库，这样打包时才会包含用户自定义的jar包
+     * @param jarName jar包的名字
+     * @param jarPath jar包的文件路径
+     * @return
+     */
+    public static String execInstallLocalJar(String jarName,String jarPath) {
+        List<String> list = Utils.parseJarName(jarName);
+        /**
+         * Java调用命令是以文件句柄的形式调用，Java并没有获取到shell，因此这里需要从cmd.exe
+         * 所以添加"cmd", "/c"
+         */
+        String[] cmds = {"cmd", "/c","mvn", "install:install-file", "-DgroupId=org.example", "-DartifactId="+list.get(0),"-Dversion="+list.get(1),
+                "-Dpackaging=jar", "-Dfile=@"+jarPath};//必须分开写，不能有空格
+
+        ProcessBuilder process = new ProcessBuilder(cmds);
+        java.lang.Process p;
+        try {
+            p = process.start();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            StringBuilder builder = new StringBuilder();
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                builder.append(line);
+                builder.append(System.getProperty("line.separator"));
+            }
+            return builder.toString();
+
+        } catch (IOException e) {
+            System.out.print("error");
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static List<String> parseJarName(String jarName){
+        List<String> artAndVer = new ArrayList<>();
+        jarName = jarName.replace(" ", "");
+        int i = jarName.indexOf("-");
+        String artifactId = jarName.substring(0,i);
+        artAndVer.add(artifactId);
+        artAndVer.add("1.0");
+        return artAndVer;
+    }
+
     /**
      * 上传jar包
      * @return 返回jarName
      */
     public static String execCurl(String flinkUrl) {
         String[] cmds={"curl","-X", "POST",  "--header", "\"Except:\"","-F",
-                "\"jarfile=@E:\\Java\\Workspace\\FlinkVue\\Flink\\target\\Flink-1.0-SNAPSHOT-jar-with-dependencies.jar\""
+                "\"jarfile=@E:\\Java\\Workspace\\FlinkVue\\Flink\\target\\"+Utils.jobName+"-1.0-SNAPSHOT-jar-with-dependencies.jar\""
                 ,flinkUrl+"/jars/upload"};//必须分开写，不能有空格
 
         ProcessBuilder process = new ProcessBuilder(cmds);
@@ -195,6 +264,7 @@ public class Utils {
     public static void mvnBuild(){
         InvocationRequest request = new DefaultInvocationRequest();
         request.setPomFile( new File( "E:\\Java\\Workspace\\FlinkVue\\Flink\\pom.xml" ) );
+        request.setGoals( Collections.singletonList( "reload" ) );
         request.setGoals( Collections.singletonList( "clean" ) );
         request.setGoals( Collections.singletonList( "compile" ) );
         request.setGoals( Collections.singletonList( "package" ) );
@@ -547,6 +617,7 @@ public class Utils {
                 case "Map":Utils.name2nodeMap.put(object.getString("id"),generateOperateMap(object));break;
                 case "FlatMap":Utils.name2nodeMap.put(object.getString("id"),generateOperateFlatMap(object));break;
                 case "KeyBy":Utils.name2nodeMap.put(object.getString("id"),generateOperateKeySelect(object));break;
+                case "UDF":Utils.name2nodeMap.put(object.getString("id"),generateOperateUDF(object));break;
                 case "Union":{
                     String id = object.getString("id");
                     Utils.name2nodeMap.put(id,generateOperateUnion(object));
@@ -580,6 +651,16 @@ public class Utils {
             nodes.add(Utils.name2nodeMap.get(idx2name.get(list.get(i))));
         }
 
+        //将孤立节点去除
+        List<Node> tmpNodes = new ArrayList<>();
+        for(Node node:nodes){
+            List<String> sources = new ArrayList<>(Arrays.asList("HDFSSource","JdbcSource", "KafkaSource", "RedisSource","AnySource","CSVSource"));
+            if((sources.contains(node.type))||(node.preName!=null&&!node.preName.equals(""))){
+                tmpNodes.add(node);
+            }
+        }
+        nodes = tmpNodes;
+
         //根据拓扑排序结果设置类名，对于如映射等操作，已知他前一节点的类型，则不需要用户手动输入，直接获取前一个节点类类型即可
         //生成代码
         //方便起见，把所有用户生成的Entity都加入到节点需要导入的包中
@@ -587,7 +668,8 @@ public class Utils {
         for(String key:name2entityMap.keySet()){
             inPackages.add("com.yzx.entity."+key);
         }
-        List<String> types = new ArrayList<>(Arrays.asList("HDFSSource", "KafkaSource", "RedisSource"));
+        inPackages.addAll(udfClass);//加入用户自定义的类
+        List<String> types = new ArrayList<>(Arrays.asList("HDFSSource", "KafkaSource", "RedisSource","AnySource"));
         for(Node node:nodes){
             switch (node.type){
                 case "CSVSource":Utils.generateCode((SourceCSV)node,5,"source_csv.ftl");break;//生成代码
@@ -628,6 +710,9 @@ public class Utils {
                 }break;
                 default:{
                     if(!types.contains(node.type)){
+                        if(node.getPreName()==null||node.getPreName().equals("")){
+                            break;
+                        }
                         node.setOutClass((Utils.name2nodeMap.get(node.getPreName())).getOutClass());
                         //生成代码
                         switch (node.type){
@@ -662,19 +747,32 @@ public class Utils {
                     }
                 }break;
             }
-            //直接导入所有的Entity
-            node.inPackages = inPackages;
+            //直接导入所有的Entity并去重
+            node.inPackages.addAll(inPackages);
+            removeDuplicationByHashSet(node.inPackages);
         }
 
         Process process = new Process();
-        process.className = getRandomString("Process");
+//        process.className = getRandomString("Process");
         Utils.EntryClass = process.className;
         process.setNodes(nodes);
+        process.jobName = Utils.jobName;
 
         //生成代码
         Utils.generateCode(process,4,"process.ftl");
 
         return process;
+    }
+
+    /**
+     * List去重
+     */
+    public static void removeDuplicationByHashSet(List<String> list) {
+        Set<String> set = new HashSet(list);
+        //把List集合所有元素清空
+        list.clear();
+        //把HashSet对象添加至List集合
+        list.addAll(set);
     }
 
     private static Node generateSinkNode(JSONObject object){
@@ -699,8 +797,33 @@ public class Utils {
             case "HDFS":return generateSourceHDFS(object);
             case "Redis":return generateSourceRedis(object);
             case "Kafka":return generateSourceKafka(object);
+            case "Any": return generateSourceAny(object);
             default:return null;
         }
+    }
+
+    /**
+     * 生成用户自定义数据源的节点
+     * @param object
+     * @return
+     */
+    private static SourceAny generateSourceAny(JSONObject object) {
+        SourceAny sourceAny = new SourceAny();
+        String entryClass = object.getString("udf_source_entry_class");
+        String[] split = entryClass.split("\\.");
+        sourceAny.setClassName(split[split.length-1]);
+
+        String outClass = object.getString("udf_source_outClass");
+        String[] split1 = outClass.split("\\.");
+        sourceAny.setOutClass(split1[split1.length-1]);
+
+        sourceAny.inPackages.add(entryClass);
+        sourceAny.curName = object.getString("id");
+
+        if(!Utils.field2javaMap.containsKey(outClass.toLowerCase(Locale.ROOT))){
+            udfClass.add(outClass);
+        }
+        return sourceAny;
     }
 
     /**
@@ -941,8 +1064,32 @@ public class Utils {
         return union;
     }
 
+    private static OperateUDF generateOperateUDF(JSONObject object) {
+        OperateUDF operateUDF = new OperateUDF();
+
+        String entryClass = object.getString("udf_function_entry_class");
+        String[] split = entryClass.split("\\.");
+        operateUDF.setClassName(split[split.length-1]);
+
+        String outClass = object.getString("udf_function_outClass");
+        String[] split1 = outClass.split("\\.");
+        operateUDF.setOutClass(split[split.length-1]);
+
+        operateUDF.inPackages.add(entryClass);
+        operateUDF.inPackages.add(outClass);
+        operateUDF.curName = object.getString("id");
+        operateUDF.operateType = object.getString("udf_function_type");
+
+        if(!Utils.field2javaMap.containsKey(outClass.toLowerCase(Locale.ROOT))){
+            udfClass.add(outClass);
+        }
+
+        return operateUDF;
+    }
+
     private static SinkConsole generateSinkConsle(JSONObject object){
         SinkConsole sinkConsole = new SinkConsole();
+        sinkConsole.setJobName(Utils.jobName);
         sinkConsole.setCurName(object.getString("id"));
         sinkConsole.setClassName(Utils.getRandomString(sinkConsole.getType()));
 

@@ -1,5 +1,8 @@
 package com.yzx.data;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class SharedData {
-    public static StringBuilder sb = new StringBuilder();
+    public static Map<String,StringBuilder> map2msg = new HashMap<>();
 }

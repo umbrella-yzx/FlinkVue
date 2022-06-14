@@ -1,8 +1,6 @@
-package ${consolesink.javaPackage};
+package com.yzx.sink;
 
-<#list consolesink.inPackages as package>
-    import ${package};
-</#list>
+    import com.yzx.entity.User;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 
@@ -28,7 +26,7 @@ import java.util.Map;
 
 import org.apache.flink.api.java.tuple.*;
 
-public class ${consolesink.className} extends RichSinkFunction<${consolesink.outClass}> {
+public class ConsleSinkwQMUz extends RichSinkFunction<User> {
 
     private final String host = "http://192.168.10.1:9355/message";
 
@@ -38,10 +36,10 @@ public class ${consolesink.className} extends RichSinkFunction<${consolesink.out
     }
 
     @Override
-    public void invoke(${consolesink.outClass} value, Context context) throws Exception {
+    public void invoke(User value, Context context) throws Exception {
         super.invoke(value, context);
-        Map<${"String,String"}> map = new HashMap<>();
-        map.put("${consolesink.jobName}",value.toString());
+        Map<String,String> map = new HashMap<>();
+        map.put("JdbcToConsole",value.toString());
         sendPost(host,map);
     }
 
@@ -50,7 +48,7 @@ public class ${consolesink.className} extends RichSinkFunction<${consolesink.out
     super.close();
     }
 
-    public void sendPost(String url, Map<${"String,String"}> map) {
+    public void sendPost(String url, Map<String,String> map) {
         CloseableHttpClient httpclient = HttpClients.createDefault();
         JSONObject jsonObject = new JSONObject();
         for(Map.Entry entry:map.entrySet()){

@@ -8,6 +8,8 @@ public class Process {
     public String javaPackage = "com.yzx.process";
     // 实体类名
     public String className = "Process";
+    //该任务的名称
+    public String jobName;
 
     public List<Node> nodes = new ArrayList<>();
 
@@ -33,5 +35,13 @@ public class Process {
 
     public void setNodes(List<Node> nodes) {
         this.nodes = nodes;
+    }
+
+    public String getJobName() {
+        return jobName;
+    }
+
+    public void setJobName(String jobName) {
+        this.jobName = jobName;
     }
 }

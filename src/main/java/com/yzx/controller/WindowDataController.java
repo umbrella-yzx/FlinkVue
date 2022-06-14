@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class WindowDataController {
     @GetMapping("/Data")
     public static String getData(){
-        return SharedData.sb.toString()+'\n';
+//        return SharedData.sb.toString()+'\n';
+        return "";
     }
 
 //

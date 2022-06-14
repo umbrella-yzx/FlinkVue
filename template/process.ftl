@@ -90,6 +90,10 @@ public class ${process.className} {
                 properties.clear();
             </#if>
 
+            <#if node.type == "AnySource">
+                DataStreamSource<${node.outClass}> ${node.curName} = env.addSource(new ${node.className}());
+            </#if>
+
             <#if node.type == "Filter">
                 SingleOutputStreamOperator<${node.outClass}> ${node.curName} = ${node.preName}.filter(new ${node.className}());
             </#if>
@@ -132,9 +136,13 @@ public class ${process.className} {
                 DataStream ${node.curName} = ${node.preName}.union(${node.condition});
             </#if>
 
+            <#if node.type == "UDF">
+                DataStream ${node.curName} = ${node.preName}.${node.operateType}(new ${node.entryClass}());
+            </#if>
+
             <#if node.type == "ConsleSink">
-                ${node.preName}.print();
-<#--                ${node.preName}.addSink(new ${node.className}());-->
+<#--                ${node.preName}.print();-->
+                ${node.preName}.addSink(new ${node.className}());
             </#if>
 
             <#if node.type == "JdbcSink">
@@ -169,6 +177,6 @@ public class ${process.className} {
             </#if>
         </#list>
 
-        env.execute();
+        env.execute("${process.jobName}");
     }
 }

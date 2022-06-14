@@ -23,7 +23,6 @@ server:
   port: 9355
 
 # 自定义文件保存路径
-gorit:
-  file:
-    root:
-      path: F:\dir\
+file:
+  root:
+    path: F:\dir\

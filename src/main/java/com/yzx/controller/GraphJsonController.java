@@ -2,6 +2,8 @@ package com.yzx.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.yzx.data.SharedData;
+import com.yzx.domain.FlinkJar;
 import com.yzx.domain.FlinkJob;
 import com.yzx.utils.Utils;
 import org.dom4j.Document;
@@ -10,15 +12,13 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 @RestController
 @CrossOrigin("*")
@@ -26,7 +26,17 @@ import java.util.List;
 public class GraphJsonController {
     private String entityJson;
 
+    //保存最初的pom.xml
+    private static Document originDocument;
+
+    //pom文件地址
+    private static final String pomFilePath="E:\\Java\\Workspace\\FlinkVue\\Flink\\pom.xml";
+
     private String flinkUrl;
+
+    // 将 yml 中的自定义配置注入到这里
+    @Value("${file.root.path}")
+    private String basePath;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -39,8 +49,99 @@ public class GraphJsonController {
     @PostMapping("/flinkUrl")
     public String getFlinkUrl(@RequestBody String flinkUrl){
         this.flinkUrl = flinkUrl.replace("\"","");
-//        System.out.println(flinkUrl);
         return flinkUrl;
+    }
+
+    /**
+     * 获取前端来的JobName并修改pom.xml中的名称
+     * @param jobName
+     * @return
+     */
+    @PostMapping("/flinkJobName")
+    public String getFlinkJobName(@RequestBody String jobName){
+        Utils.jobName = jobName.replace("\"","");
+        try{
+            // 创建SAXReader对象
+            SAXReader sr = new SAXReader(); // 需要导入jar包:dom4j
+            // 关联xml
+            Document document = sr.read(pomFilePath);
+
+            // 获取根元素
+            Element root = document.getRootElement();
+            Element artifactId = root.element("artifactId");
+            artifactId.setText(Utils.jobName);
+            // 调用下面的静态方法完成xml的写出
+            saveDocument(document, new File(pomFilePath));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return jobName;
+    }
+
+    //获取从集群来的消息
+    @PostMapping("/message")
+    public String messageFromFlink(@RequestBody String msg){
+        JSONObject object = JSONObject.parseObject(msg);
+        Set<String> strings = object.keySet();
+        for(String key:strings){
+            if(!SharedData.map2msg.containsKey(key)){
+                SharedData.map2msg.put(key,new StringBuilder());
+            }
+            SharedData.map2msg.get(key).append(object.getString(key)).append("\n");
+        }
+        return msg;
+    }
+
+    //前端获取消息
+    @PostMapping("/getMessage")
+    public String message2Web(@RequestBody String jobId){
+        jobId = jobId.replace("\"","");
+//        int idx = jobId.indexOf("_");
+//        jobId = jobId.substring(idx + 1);
+//        int idx1 = jobId.indexOf("-");
+//        jobId = jobId.substring(0, idx1);
+//        System.out.println(jobId);
+//        System.out.println(SharedData.map2msg);
+        return SharedData.map2msg.get(jobId).toString();
+    }
+
+    //获取集群Jars
+    @GetMapping("/getJars")
+    public List<FlinkJar> getJars(){
+        String str = restTemplate.getForObject(flinkUrl+"/jars",String.class);
+//        System.out.println(str);
+        JSONObject root = JSONObject.parseObject(str);
+        JSONArray jars = root.getJSONArray("files");
+        List<FlinkJar> flinkJars = new ArrayList<>();
+        for(int i = 0;i<jars.size();++i){
+            JSONObject jar =(JSONObject) jars.get(i);
+            FlinkJar flinkJar = new FlinkJar();
+            flinkJar.setId(jar.getString("id"));
+            flinkJar.setName(jar.getString("name"));
+            SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            flinkJar.setUploaded(format1.format(Long.parseLong(jar.getString("uploaded"))));
+
+            flinkJars.add(flinkJar);
+//            System.out.println(flinkJob);
+        }
+        return flinkJars;
+    }
+
+    //删除集群指定Jar包
+    @PostMapping("/deleteJar")
+    public String deleteJar(@RequestBody String jar){
+        String jarId = jar.replace("\"","");
+        restTemplate.delete(flinkUrl+"/jars/"+jarId);
+        return jar;
+    }
+
+    //执行集群指定Jar包
+    @PostMapping("/runJar")
+    public String runJar(@RequestBody String jar){
+        String jarId = jar.replace("\"","");
+        String str = "";
+        restTemplate.postForObject(flinkUrl+"/jars/"+jarId+"/run",str,String.class);
+        return jar;
     }
 
     private static int VERSION = 1;
@@ -53,10 +154,10 @@ public class GraphJsonController {
     @PostMapping("/graphJson")
     public String graphJson(@RequestBody String json){
         if(flinkUrl==null||flinkUrl.equals(""))return "error";
-
         String fileid="";
         Utils.deleteFile();
-//        javaChangeVersion();
+
+        installJar(Utils.getJarsName(json));
 
         List<String> execute = Utils.execute(entityJson, json,flinkUrl);
 
@@ -69,7 +170,27 @@ public class GraphJsonController {
         String tmp = "";
         restTemplate.postForObject(flinkUrl+"/jars/"+fileid+
                 "/run?entry-class=com.yzx.process."+execute.get(1),tmp,String.class);
+
+        //pom恢复为原来的版本
+        try {
+            saveDocument(originDocument,new File(pomFilePath));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return json;
+    }
+
+
+    /**
+     * 往maven仓库中添加用户jar，并且写入pom.xml
+     * @param jars
+     */
+    public void installJar(List<String> jars){
+        for (int i = 0; i < jars.size(); i++) {
+            Utils.execInstallLocalJar(jars.get(i),basePath+jars.get(i));
+        }
+        insertJarPath2Pom(jars);
+
     }
 
     /**
@@ -92,7 +213,7 @@ public class GraphJsonController {
     public List<FlinkJob> getJobs(){
         String str = "";
         str = restTemplate.getForObject(flinkUrl+"/jobs/overview",String.class);
-        System.out.println(str);
+//        System.out.println(str);
         JSONObject root = JSONObject.parseObject(str);
         JSONArray jobs = root.getJSONArray("jobs");
         List<FlinkJob> flinkJobs = new ArrayList<>();
@@ -112,88 +233,56 @@ public class GraphJsonController {
             flinkJob.setDuration(format2.format(Long.parseLong(job.getString("duration"))));
 
             flinkJobs.add(flinkJob);
-            System.out.println(flinkJob);
+//            System.out.println(flinkJob);
         }
 
         return flinkJobs;
     }
 
     /**
-     * 恢复初始版本的pom.xml
+     * 保存初始版本的pom.xml
      */
-    public static void recoverPom(){
-        String filePath="E:\\Java\\Workspace\\FlinkVue\\Flink\\pom.xml";
-
+    public static void keepOriginPom(){
         try{
-//            Utils.deleteFile();
             // 创建SAXReader对象
             SAXReader sr = new SAXReader(); // 需要导入jar包:dom4j
             // 关联xml
-            Document document = sr.read(filePath);
-
-            // 获取根元素
-            Element root = document.getRootElement();
-            // 获取version标签
-            Element version = root.element("version");
-
-            // 在xml的某一个标签里修改一个属性
-            version.setText("1.0-SNAPSHOT");
-
-            //如果存在<scope>provided</scope>则删除
-            Element dependencies = root.element("dependencies");
-            for (Iterator i = dependencies.elementIterator(); i.hasNext();) {
-                Element el = (Element) i.next();
-                Element engNameElement = el.element("scope");
-                if(engNameElement!=null){
-                    el.remove(engNameElement);
-                }
-            }
-
-            // 调用下面的静态方法完成xml的写出
-            saveDocument(document, new File(filePath));
+            originDocument = sr.read(pomFilePath);
         }catch (Exception e){
             e.printStackTrace();
         }
     }
 
     /**
-     * 修改pom.xml文件中的版本
+     * 将用户的jar路径写入pom.xml
      */
-    @Deprecated
-    public static void javaChangeVersion() {
-        String filePath="E:\\Java\\Workspace\\FlinkVue\\Flink\\pom.xml";
+    public static void insertJarPath2Pom(List<String> jars) {
 
         try{
             // 创建SAXReader对象
             SAXReader sr = new SAXReader(); // 需要导入jar包:dom4j
             // 关联xml
-            Document document = sr.read(filePath);
+            Document document = sr.read(pomFilePath);
 
             // 获取根元素
             Element root = document.getRootElement();
-            // 获取version标签
-            Element version = root.element("version");
+            Element dependencies = root.element("dependencies");
 
-            // 在xml的某一个标签里修改一个属性
-            version.setText(VERSION+".0-SNAPSHOT");
-            Utils.version = VERSION;
+            for (int i = 0; i < jars.size(); i++) {
+                List<String> list = Utils.parseJarName(jars.get(i));
+                String artifactId = list.get(0);
+                String version = list.get(1);
 
-//            //如果是第二次访问xml，则添加<scope>provided</scope>
-//            if(VERSION==2){
-//                Element dependencies = root.element("dependencies");
-//                for (Iterator i = dependencies.elementIterator(); i.hasNext();) {
-//                    Element el = (Element) i.next();
-//                    Element engNameElement = el.element("scope");
-//                    if(engNameElement==null){
-//                        Element scope = el.addElement("scope");
-//                        scope.setText("provided");
-//                    }
-//                }
-//            }
-
-            VERSION++;
+                Element dependency = dependencies.addElement("dependency");
+                Element groupId = dependency.addElement("groupId");
+                groupId.setText("org.example");
+                Element artifactIdElement = dependency.addElement("artifactId");
+                artifactIdElement.setText(artifactId);
+                Element versionElement = dependency.addElement("version");
+                versionElement.setText(version);
+            }
             // 调用下面的静态方法完成xml的写出
-            saveDocument(document, new File(filePath));
+            saveDocument(document, new File(pomFilePath));
         }catch (Exception e){
             e.printStackTrace();
         }

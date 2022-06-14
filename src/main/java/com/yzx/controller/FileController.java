@@ -29,19 +29,15 @@ public class FileController {
     // 文件上传 （可以多文件上传）
     @PostMapping("/userFileUpload")
     public Result fileUploads(HttpServletRequest request,@RequestParam("file") MultipartFile file) throws IOException {
-        // 得到格式化后的日期
-        String format = sdf.format(new Date());
         // 获取上传的文件名称
         String fileName = file.getOriginalFilename();
-        // 时间 和 日期拼接
-        String newFileName = format + "_" + fileName;
         // 得到文件保存的位置以及新文件名
-        File dest = new File(filePath + newFileName);
+        File dest = new File(filePath + fileName);
         try {
             // 上传的文件被保存了
             file.transferTo(dest);
             // 打印日志
-            log.info("上传成功，当前上传的文件保存在 {}",filePath + newFileName);
+            log.info("上传成功，当前上传的文件保存在 {}",filePath + fileName);
             // 自定义返回的统一的 JSON 格式的数据，可以直接返回这个字符串也是可以的。
             return Result.succ("上传成功");
         } catch (IOException e) {
