@@ -9,7 +9,7 @@ import org.apache.flink.api.java.tuple.*;
 
 public class ${flatmap.className} extends RichFlatMapFunction<${flatmap.inClass}, ${flatmap.outClass}> {
     @Override
-    public void flatMap(${flatmap.inClass} in, Collector<${flatmap.outClass}> out) throws Exception {
-        ${flatmap.condition};
+    public void flatMap(${flatmap.inClass} value, Collector<${flatmap.outClass}> out) throws Exception {
+        ${flatmap.condition}
     }
 }

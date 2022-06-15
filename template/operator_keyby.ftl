@@ -10,6 +10,6 @@ import org.apache.flink.api.java.tuple.*;
 public class ${keyby.className} implements KeySelector<${keyby.inClass},${keyby.outClass}> {
     @Override
     public ${keyby.outClass} getKey(${keyby.inClass} value) throws Exception {
-        return ${keyby.condition};
+        ${keyby.condition}
     }
 }

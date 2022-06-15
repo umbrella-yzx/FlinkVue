@@ -10,6 +10,6 @@ import org.apache.flink.api.java.tuple.*;
 public class ${filter.className} extends RichFilterFunction<${filter.outClass}> {
     @Override
     public boolean filter(${filter.outClass} value) throws Exception {
-        return ${filter.condition};
+        ${filter.condition}
     }
 }

@@ -1,6 +1,5 @@
 package com.yzx.sink;
 
-    import com.yzx.entity.User;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 
@@ -26,7 +25,7 @@ import java.util.Map;
 
 import org.apache.flink.api.java.tuple.*;
 
-public class ConsleSinkwQMUz extends RichSinkFunction<User> {
+public class ConsleSinkcqMCp extends RichSinkFunction<Tuple2<Integer,Integer>> {
 
     private final String host = "http://192.168.10.1:9355/message";
 
@@ -36,10 +35,10 @@ public class ConsleSinkwQMUz extends RichSinkFunction<User> {
     }
 
     @Override
-    public void invoke(User value, Context context) throws Exception {
+    public void invoke(Tuple2<Integer,Integer> value, Context context) throws Exception {
         super.invoke(value, context);
         Map<String,String> map = new HashMap<>();
-        map.put("JdbcToConsole",value.toString());
+        map.put("UserKeybyArTest",value.toString());
         sendPost(host,map);
     }
 

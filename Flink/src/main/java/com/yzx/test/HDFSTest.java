@@ -10,7 +10,7 @@ public class HDFSTest {
         StreamExecutionEnvironment env = ApplicationEnv.getEnvironment();
 
         HDFSConfig hdfsConfig = new HDFSConfig();
-        DataStreamSource<String> data = env.readTextFile("hdfs://192.168.10.102:8020/test/test.txt");
+        DataStreamSource<String> data = env.readTextFile("hdfs://192.168.10.102:9000/user/test/test.txt");
         data.print();
         env.execute();
     }

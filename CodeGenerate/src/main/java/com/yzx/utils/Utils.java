@@ -485,6 +485,7 @@ public class Utils {
      * @param json
      */
     public static void generateEntity(String json){
+        if(json==null||json.equals(""))return;
         JSONArray objects = JSONObject.parseArray(json);
         for(int i=0;i<objects.size();++i) {
             JSONObject object = JSONObject.parseObject(objects.get(i).toString());
@@ -708,6 +709,18 @@ public class Utils {
                     //生成代码
                     Utils.generateCode((OperateMap)node,3,"operator_map.ftl");
                 }break;
+                case "Reduce": {
+                    node.setOutClass(((OperateKeySelect)(Utils.name2nodeMap.get(node.getPreName()))).getInClass());
+                    List<String> inPackage = new ArrayList<>();
+                    if(Utils.name2entityMap.containsKey(node.getOutClass())){
+                        inPackage.add("com.yzx.entity."+node.getOutClass());
+                    }
+                    node.setInPackages(inPackage);
+                    Utils.generateCode((OperateReduce)node,7,"operator_reduce.ftl");
+                }break;
+                case "Aggregation": {
+                    node.setOutClass(((OperateKeySelect)(Utils.name2nodeMap.get(node.getPreName()))).getInClass());
+                }break;
                 default:{
                     if(!types.contains(node.type)){
                         if(node.getPreName()==null||node.getPreName().equals("")){
@@ -723,14 +736,6 @@ public class Utils {
                                     node.setInPackages(inPackage);
                                 }
                                 Utils.generateCode((OperateFilter)node,2,"operator_filter.ftl");
-                            }break;
-                            case "Reduce": {
-                                List<String> inPackage = new ArrayList<>();
-                                if(Utils.name2entityMap.containsKey(node.getOutClass())){
-                                    inPackage.add("com.yzx.entity."+node.getOutClass());
-                                }
-                                node.setInPackages(inPackage);
-                                Utils.generateCode((OperateReduce)node,7,"operator_reduce.ftl");
                             }break;
                             case "CSVSink":{
                                 if(Utils.name2entityMap.containsKey(node.getOutClass()))((SinkCSV)node).setIsentity(true);
