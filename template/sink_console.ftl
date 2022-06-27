@@ -30,7 +30,7 @@ import org.apache.flink.api.java.tuple.*;
 
 public class ${consolesink.className} extends RichSinkFunction<${consolesink.outClass}> {
 
-    private final String host = "http://192.168.10.1:9355/message";
+    private final String host = "http://${consolesink.ipAddr}:9355/message";
 
     @Override
     public void open(Configuration parameters) throws Exception {

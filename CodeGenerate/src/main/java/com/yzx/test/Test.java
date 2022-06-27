@@ -1,29 +1,18 @@
 package com.yzx.test;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Test {
     public static void main(String[] args) throws Exception {
-//        String path = "E:\\Java\\Workspace\\FlinkVue\\Flink\\target\\Flink-1.0-SNAPSHOT-jar-with-dependencies.jar";
-//        Utils.loadJar(path);
-//        Class<?> aClass = Class.forName("com.yzx.process.ProcessWwyya");
-//        Method method=aClass.getDeclaredMethod("execute");
-//        method.invoke(null); //当类型为String[]时，需要(Object)new String[] {}初始化
-//        String[] cmds={"curl","-X", "POST",  "--header", "\"Except:\"","-F",
-//                "\"jarfile=@E:\\Java\\Workspace\\FlinkVue\\Flink\\target\\Flink-1.0-SNAPSHOT-jar-with-dependencies.jar\""
-//                ,"http://192.168.10.102:8081/jars/upload"};//必须分开写，不能有空格
-//        String s = execCurl(cmds);
-//        String path = "/jars/c6279a49-ae26-4a55-a5d3-780ffcddb01b_Flink-1.0-SNAPSHOT-jar-with-dependencies.jar/run";
-//        String param = "?entry-class=com.yzx.process.ProcessPMkOZ";
-//        restCallerPost(path,param);
-        List<String> str = new ArrayList<>();
+        //获取项目路径
+        File directory = new File("");// 参数为空
+        String courseFile = directory.getCanonicalPath();
+        System.out.println("path2: "+courseFile);
     }
 
     public static String execCurl() {

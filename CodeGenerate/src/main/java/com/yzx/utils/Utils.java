@@ -54,10 +54,15 @@ public class Utils {
     //JobName每个任务的名称
     public static String jobName;
 
-
     public static int version = 1;
 
     private static String EntryClass;
+
+    //maven路径
+    public static String mvnPath;
+
+    //指定项目存放路径
+    public static String projectPath;
 
     static {
         field2javaMap.put("byte","byte");
@@ -94,6 +99,14 @@ public class Utils {
         java2sqlMap.put("string","STRING");
         java2sqlMap.put("date","DATE");
         java2sqlMap.put("list","ARRAY");
+
+        //获取项目路径
+        File directory = new File("");// 参数为空
+        try {
+            projectPath = directory.getCanonicalPath();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private static File javaFile = null;
@@ -210,12 +223,15 @@ public class Utils {
     }
 
     /**
-     * 上传jar包
+     * 上传jar包到flink集群
      * @return 返回jarName
      */
     public static String execCurl(String flinkUrl) {
+//        String[] cmds={"curl","-X", "POST",  "--header", "\"Except:\"","-F",
+//                "\"jarfile=@E:\\Java\\Workspace\\FlinkVue\\Flink\\target\\"+Utils.jobName+"-1.0-SNAPSHOT-jar-with-dependencies.jar\""
+//                ,flinkUrl+"/jars/upload"};//必须分开写，不能有空格
         String[] cmds={"curl","-X", "POST",  "--header", "\"Except:\"","-F",
-                "\"jarfile=@E:\\Java\\Workspace\\FlinkVue\\Flink\\target\\"+Utils.jobName+"-1.0-SNAPSHOT-jar-with-dependencies.jar\""
+                "\"jarfile=@"+projectPath+"\\Flink\\target\\"+Utils.jobName+"-1.0-SNAPSHOT-jar-with-dependencies.jar\""
                 ,flinkUrl+"/jars/upload"};//必须分开写，不能有空格
 
         ProcessBuilder process = new ProcessBuilder(cmds);
@@ -263,7 +279,8 @@ public class Utils {
 
     public static void mvnBuild(){
         InvocationRequest request = new DefaultInvocationRequest();
-        request.setPomFile( new File( "E:\\Java\\Workspace\\FlinkVue\\Flink\\pom.xml" ) );
+        request.setPomFile( new File( projectPath+"\\Flink\\pom.xml" ) );
+//        request.setPomFile( new File( "FlinkVue\\Flink\\pom.xml" ) );
         request.setGoals( Collections.singletonList( "reload" ) );
         request.setGoals( Collections.singletonList( "clean" ) );
         request.setGoals( Collections.singletonList( "compile" ) );
@@ -271,7 +288,8 @@ public class Utils {
 //        request.setGoals( Collections.singletonList( "install" ) );
 
         Invoker invoker = new DefaultInvoker();
-        invoker.setMavenHome(new File("E:\\Java\\IntelliJ IDEA 2021.2.2\\plugins\\maven\\lib\\maven3"));
+//        invoker.setMavenHome(new File("E:\\Java\\IntelliJ IDEA 2021.2.2\\plugins\\maven\\lib\\maven3"));
+        invoker.setMavenHome(new File(mvnPath));
 
         /*invoker.setLogger(new PrintStreamLogger(System.err,  InvokerLogger.ERROR){
 
@@ -438,7 +456,8 @@ public class Utils {
 //            JavaCompiler compiler= ToolProvider.getSystemJavaCompiler(); //调用动态编译的工具
 //            int result =compiler.run(null, null, null, "-d", "E:\\Java\\Workspace\\FlinkVue\\Flink\\target\\classes\\", javaFile.getCanonicalPath()); //进行动态编译，并返回结果
 //            System.out.println(result==0?"编译成功":"编译失败");
-            generateFile.add("E:\\Java\\Workspace\\FlinkVue\\Flink\\target\\classes\\"+path.replace('.', '\\')+".class");
+//            generateFile.add("E:\\Java\\Workspace\\FlinkVue\\Flink\\target\\classes\\"+path.replace('.', '\\')+".class");
+            generateFile.add("FlinkVue\\Flink\\target\\classes\\"+path.replace('.', '\\')+".class");
         } catch (IOException | TemplateException e) {
             e.printStackTrace();
         }

@@ -22,7 +22,9 @@ mybatis-plus:
 server:
   port: 9355
 
-# 自定义文件保存路径
 file:
   root:
+    # 自定义文件保存路径
     path: F:\dir\
+    # maven路径
+    mvnPath: E:\Java\IntelliJ IDEA 2021.2.2\plugins\maven\lib\maven3

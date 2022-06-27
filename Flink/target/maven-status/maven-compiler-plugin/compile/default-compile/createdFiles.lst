@@ -3,7 +3,6 @@ com\yzx\source\config\KafkaConfig.class
 com\yzx\source\config\JdbcConfig.class
 com\yzx\sink\SinkConsle.class
 com\yzx\source\redis\RedisContainer.class
-com\yzx\sink\JdbcSinkDwZSy.class
 com\yzx\source\redis\RedisSource.class
 com\yzx\utils\ApplicationEnv.class
 com\yzx\source\config\KafkaConfig$MyProperty.class
@@ -21,12 +20,13 @@ com\yzx\test\SinkCSVTest$2.class
 com\yzx\source\redis\RedisCommandsContainerBuilder.class
 com\yzx\test\SinkCSVTest.class
 com\yzx\source\config\RedisConfig.class
-com\yzx\source\JdbcSourceLBoFU.class
 com\yzx\entity\MyScores.class
 com\yzx\test\HDFSTest.class
 com\yzx\utils\UDF.class
 com\yzx\source\redis\RedisSource$1.class
+com\yzx\source\JdbcSourcebTCry.class
 com\yzx\entity\User.class
+com\yzx\sink\ConsleSinkoUxnC.class
 com\yzx\source\redis\RedisCommand.class
 com\yzx\test\Test.class
 com\yzx\source\config\CSVConfig.class

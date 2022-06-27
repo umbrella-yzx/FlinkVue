@@ -30,13 +30,17 @@ public class GraphJsonController {
     private static Document originDocument;
 
     //pom文件地址
-    private static final String pomFilePath="E:\\Java\\Workspace\\FlinkVue\\Flink\\pom.xml";
+    private static final String pomFilePath="Flink\\pom.xml";
 
     private String flinkUrl;
 
     // 将 yml 中的自定义配置注入到这里
     @Value("${file.root.path}")
     private String basePath;
+
+    // 将 yml 中的自定义配置注入到这里
+    @Value("${file.root.mvnPath}")
+    private String mvnPath;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -153,6 +157,8 @@ public class GraphJsonController {
      */
     @PostMapping("/graphJson")
     public String graphJson(@RequestBody String json){
+        Utils.mvnPath = mvnPath;
+
         if(flinkUrl==null||flinkUrl.equals(""))return "error";
         String fileid="";
         Utils.deleteFile();
